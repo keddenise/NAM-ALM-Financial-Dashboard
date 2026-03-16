@@ -463,6 +463,185 @@ tr:hover td { background: var(--gray-50); }
 .text-right { text-align: right; }
 .fw-700 { font-weight: 700; }
 .mt-6 { margin-top: 6px; }
+
+/* ── BONUS MONITORING ────────────────────────────────────── */
+.bonus-hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: stretch;
+}
+.bonus-hero-main {
+  background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 60%, #2563EB 100%);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  color: white;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+.bonus-hero-main::before {
+  content: ''; position: absolute;
+  top: -40px; right: -40px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.05);
+}
+.bonus-hero-main::after {
+  content: ''; position: absolute;
+  bottom: -60px; right: 60px;
+  width: 150px; height: 150px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+}
+.bonus-hero-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: rgba(255,255,255,.6);
+  margin-bottom: 6px;
+}
+.bonus-hero-title {
+  font-size: 26px; font-weight: 800; color: white; line-height: 1;
+  margin-bottom: 20px; letter-spacing: -.5px;
+}
+.bonus-hero-pct {
+  font-size: 52px; font-weight: 900; line-height: 1;
+  font-family: 'DM Mono', monospace;
+  color: white; letter-spacing: -2px; margin-bottom: 12px;
+}
+.bonus-hero-pct span { font-size: 28px; font-weight: 700; color: rgba(255,255,255,.7); }
+.bonus-hero-bar-wrap {
+  height: 10px; background: rgba(255,255,255,.15);
+  border-radius: 5px; overflow: hidden; margin-bottom: 16px;
+}
+.bonus-hero-bar-fill {
+  height: 100%; border-radius: 5px;
+  background: linear-gradient(90deg, #22C55E, #86EFAC);
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+.bonus-hero-stats {
+  display: flex; gap: 24px; flex-wrap: wrap;
+}
+.bonus-hero-stat { display: flex; flex-direction: column; gap: 2px; }
+.bonus-hero-stat-val {
+  font-size: 15px; font-weight: 700;
+  font-family: 'DM Mono', monospace; color: white;
+}
+.bonus-hero-stat-lbl { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .3px; }
+
+.bonus-hero-side {
+  display: flex; flex-direction: column; gap: 10px; min-width: 175px;
+}
+.bonus-stat-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--gray-100);
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+}
+.bonus-stat-card-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--gray-400); margin-bottom: 4px;
+}
+.bonus-stat-card-val {
+  font-size: 17px; font-weight: 700;
+  font-family: 'DM Mono', monospace; color: var(--gray-900); line-height: 1;
+}
+.bonus-stat-card.green  .bonus-stat-card-val { color: var(--green-600); }
+.bonus-stat-card.orange .bonus-stat-card-val { color: var(--orange-600); }
+.bonus-stat-card-sub { font-size: 10px; color: var(--gray-400); margin-top: 3px; }
+
+/* Target input row */
+.bonus-config-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--blue-50); border: 1.5px solid var(--blue-100);
+  border-radius: var(--radius-sm); padding: 10px 16px;
+  margin-bottom: 16px; font-size: 12px; color: var(--blue-700);
+}
+.bonus-config-row label { font-weight: 600; }
+.bonus-target-input {
+  font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600;
+  padding: 5px 10px; border-radius: 5px;
+  border: 1.5px solid var(--blue-200); background: white;
+  color: var(--blue-900); width: 120px; outline: none;
+}
+.bonus-target-input:focus { border-color: var(--blue-500); }
+
+/* Bonus table */
+.bonus-table-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--gray-100);
+  overflow: hidden;
+}
+.bonus-table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--gray-50);
+  border-bottom: 2px solid var(--gray-200);
+}
+table.bonus-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.bonus-tbl th {
+  padding: 9px 12px; text-align: left;
+  font-size: 10px; font-weight: 700; letter-spacing: .7px;
+  text-transform: uppercase; color: var(--gray-500);
+  background: var(--gray-50);
+  border-bottom: 1.5px solid var(--gray-200);
+  white-space: nowrap;
+}
+table.bonus-tbl th.num { text-align: right; }
+table.bonus-tbl td {
+  padding: 10px 12px; text-align: left;
+  color: var(--gray-700); border-bottom: 1px solid var(--gray-100);
+  font-size: 12px; white-space: nowrap; vertical-align: middle;
+}
+table.bonus-tbl td.num {
+  text-align: right; font-family: 'DM Mono', monospace; font-size: 11.5px;
+}
+table.bonus-tbl tr:hover td { background: var(--blue-50); }
+table.bonus-tbl tr.bonus-total td {
+  background: var(--blue-900); color: white; font-weight: 700;
+  border-top: 2px solid var(--blue-700);
+  font-family: 'DM Mono', monospace; font-size: 11.5px;
+}
+table.bonus-tbl tr.bonus-total td:first-child {
+  font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: .5px;
+}
+
+/* Battery bar inside table */
+.batt-wrap { display: flex; align-items: center; gap: 8px; min-width: 200px; }
+.batt-track {
+  flex: 1; height: 13px;
+  background: var(--gray-100); border-radius: 3px;
+  overflow: hidden; border: 1px solid var(--gray-200);
+}
+.batt-fill { height: 100%; border-radius: 2px; transition: width .5s ease; }
+.batt-fill.low  { background: linear-gradient(90deg,#EF4444,#FCA5A5); }
+.batt-fill.med  { background: linear-gradient(90deg,#F59E0B,#FCD34D); }
+.batt-fill.high { background: linear-gradient(90deg,#16A34A,#4ADE80); }
+.batt-label { font-size: 10px; font-weight: 700; color: var(--gray-600); font-family:'DM Mono',monospace; white-space:nowrap; }
+.batt-met {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--green-50); color: var(--green-700);
+  border: 1px solid var(--green-100);
+  padding: 2px 8px; border-radius: 20px;
+  font-size: 10px; font-weight: 700;
+}
+.status-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 20px;
+  font-size: 10px; font-weight: 600; white-space: nowrap;
+}
+.status-pill.met    { background: var(--green-50);  color: var(--green-700); }
+.status-pill.notmet { background: var(--red-100);   color: var(--red-500);  }
+.status-pill.profit { background: var(--green-50);  color: var(--green-700); }
+.status-pill.loss   { background: var(--orange-50); color: var(--orange-600); }
+
+@media (max-width: 900px) {
+  .bonus-hero { grid-template-columns: 1fr; }
+  .bonus-hero-side { flex-direction: row; min-width: unset; }
+}
 </style>
 </head>
 <body>
@@ -492,6 +671,9 @@ tr:hover td { background: var(--gray-50); }
     </button>
     <button class="nav-link" onclick="setView('opex')">
       <i class="nav-icon">💼</i> OpEx Breakdown
+    </button>
+    <button class="nav-link" onclick="setView('bonus')">
+      <i class="nav-icon">🎯</i> Bonus Monitoring
     </button>
   </div>
 
@@ -794,6 +976,78 @@ tr:hover td { background: var(--gray-50); }
       </div>
     </div>
 
+    <!-- ── VIEW: BONUS MONITORING ──────────────────────────── -->
+    <div id="view-bonus" class="hidden">
+      <div class="section-header">
+        <span class="section-title">🎯 Performance Bonus Monitoring</span>
+        <span class="section-badge" style="background:var(--blue-50);color:var(--blue-700);" id="bonus-year-badge">FY 2025</span>
+      </div>
+
+      <!-- Hero + Side Stats -->
+      <div class="bonus-hero">
+        <div class="bonus-hero-main">
+          <div class="bonus-hero-label">📊 Annual Total — Commission Achievement</div>
+          <div class="bonus-hero-title">Performance Bonus Monitoring</div>
+          <div class="bonus-hero-pct" id="bonus-pct-display">—<span>%</span></div>
+          <div class="bonus-hero-bar-wrap">
+            <div class="bonus-hero-bar-fill" id="bonus-hero-bar" style="width:0%"></div>
+          </div>
+          <div class="bonus-hero-stats">
+            <div class="bonus-hero-stat">
+              <div class="bonus-hero-stat-val" id="bonus-progress-ytd">—</div>
+              <div class="bonus-hero-stat-lbl">Total Progress (YTD)</div>
+            </div>
+            <div class="bonus-hero-stat">
+              <div class="bonus-hero-stat-val" id="bonus-target-ytd">—</div>
+              <div class="bonus-hero-stat-lbl">Annual Target</div>
+            </div>
+            <div class="bonus-hero-stat">
+              <div class="bonus-hero-stat-val" id="bonus-remaining-ytd">—</div>
+              <div class="bonus-hero-stat-lbl">Remaining</div>
+            </div>
+          </div>
+        </div>
+        <div class="bonus-hero-side">
+          <div class="bonus-stat-card green">
+            <div class="bonus-stat-card-label">Months Target Met</div>
+            <div class="bonus-stat-card-val" id="bonus-months-met">—</div>
+            <div class="bonus-stat-card-sub">out of 12 months</div>
+          </div>
+          <div class="bonus-stat-card orange">
+            <div class="bonus-stat-card-label">Months Below Target</div>
+            <div class="bonus-stat-card-val" id="bonus-months-miss">—</div>
+            <div class="bonus-stat-card-sub">need improvement</div>
+          </div>
+          <div class="bonus-stat-card">
+            <div class="bonus-stat-card-label">Monthly Target</div>
+            <div class="bonus-stat-card-val" id="bonus-monthly-target-display">₱50,000</div>
+            <div class="bonus-stat-card-sub">per month</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target config -->
+      <div class="bonus-config-row">
+        <label>💡 Monthly Commission Target (₱):</label>
+        <input type="number" class="bonus-target-input" id="bonus-target-input"
+               value="50000" min="0" step="1000"
+               oninput="onBonusTargetChange()" />
+        <span style="color:var(--blue-500); font-size:11px;">← Adjust target to recalculate all rows instantly</span>
+      </div>
+
+      <!-- Monthly Table -->
+      <div class="bonus-table-card">
+        <div class="bonus-table-header">
+          <div class="chart-title">Monthly Commission Progress — All Months</div>
+          <span style="font-size:11px; color:var(--gray-400);">Progress = Staff (2%) + Sales (3%) Commissions from IS Summary</span>
+        </div>
+        <div class="table-wrap">
+          <table class="bonus-tbl" id="bonus-table"></table>
+        </div>
+      </div>
+
+    </div><!-- /view-bonus -->
+
   </div><!-- /dashboard-content -->
 
 </main>
@@ -932,7 +1186,7 @@ function getCompDetail() {
 // ── VIEW SWITCHING ────────────────────────────────────────────
 function setView(v) {
   state.view = v;
-  ['overview','income','costs','opex'].forEach(name => {
+  ['overview','income','costs','opex','bonus'].forEach(name => {
     const panel = el('view-' + name);
     if (panel) panel.classList.toggle('hidden', name !== v);
   });
@@ -1015,6 +1269,7 @@ function renderAll() {
   renderCOGSGPChart();
   renderOpExTrendChart();
   renderCompTrendChart();
+  renderBonusMonitoring();
 }
 function renderView() { renderAll(); }
 
@@ -1554,7 +1809,157 @@ function resetCountdown() {
   }, 1000);
 }
 
-Chart.defaults.font.family = 'DM Sans';
+// ── BONUS MONITORING ─────────────────────────────────────────
+function getBonusMonthlyTarget() {
+  const inp = el('bonus-target-input');
+  return inp ? (parseFloat(inp.value) || 50000) : 50000;
+}
+
+function onBonusTargetChange() {
+  if (state.data) renderBonusMonitoring();
+}
+
+function renderBonusMonitoring() {
+  const sd = state.summaryData;
+  const d  = state.data;
+  if (!sd && !d) return;
+
+  const monthlyTarget = getBonusMonthlyTarget();
+  const annualTarget  = monthlyTarget * 12;
+
+  el('bonus-year-badge').textContent     = 'FY ' + state.year;
+  el('bonus-monthly-target-display').textContent = peso(monthlyTarget);
+
+  // Build per-month data
+  // Progress = totalCommissions (staffCommission + salesCommission) per month — row 79
+  // Net Income = netIncome.afterTax per month — row 84
+  const monthlyRows = MONTHS.map((m, i) => {
+    let progress  = 0;
+    let netIncome = 0;
+
+    if (sd) {
+      // Use real per-month data from summary
+      progress  = (sd.opex.totalCommissions[m] || 0);
+      netIncome = (sd.netIncome.afterTax[m]    || 0);
+    } else if (d) {
+      // Fallback: use KPI trend data
+      progress  = d.monthlyTrend.opex[i] * 0.05; // approx 5% commissions
+      netIncome = d.monthlyTrend.netIncome[i] || 0;
+    }
+
+    const variance    = progress - monthlyTarget;
+    const pctAchieved = monthlyTarget > 0 ? progress / monthlyTarget : 0;
+    const met         = pctAchieved >= 1;
+
+    return { month: m, target: monthlyTarget, progress, variance, pctAchieved, met, netIncome };
+  });
+
+  // Annual totals
+  const annualProgress  = monthlyRows.reduce((s, r) => s + r.progress, 0);
+  const annualVariance  = annualProgress - annualTarget;
+  const annualPct       = annualTarget > 0 ? annualProgress / annualTarget : 0;
+  const annualNetIncome = monthlyRows.reduce((s, r) => s + r.netIncome, 0);
+  const monthsMet       = monthlyRows.filter(r => r.met).length;
+  const monthsMiss      = 12 - monthsMet;
+
+  // ── Hero panel ──
+  const pctDisplay = (annualPct * 100).toFixed(1);
+  el('bonus-pct-display').innerHTML  = pctDisplay + '<span>%</span>';
+  el('bonus-hero-bar').style.width   = Math.min(annualPct * 100, 100).toFixed(1) + '%';
+  el('bonus-progress-ytd').textContent = peso(annualProgress);
+  el('bonus-target-ytd').textContent   = peso(annualTarget);
+
+  const remaining = annualTarget - annualProgress;
+  const remEl = el('bonus-remaining-ytd');
+  remEl.textContent = remaining > 0 ? peso(remaining) : '✅ Exceeded!';
+  remEl.style.color = remaining > 0 ? 'white' : '#86EFAC';
+
+  el('bonus-months-met').textContent  = monthsMet;
+  el('bonus-months-miss').textContent = monthsMiss;
+
+  // ── Table ──
+  const thead = `<thead><tr>
+    <th>MONTH</th>
+    <th class="num">TARGET (₱)</th>
+    <th class="num">PROGRESS (₱)</th>
+    <th class="num">VARIANCE (₱)</th>
+    <th>BATTERY LEVEL</th>
+    <th class="num">% ACHIEVED</th>
+    <th class="num">NET PROFIT (₱)</th>
+    <th>NET INCOME STATUS</th>
+  </tr></thead>`;
+
+  const tbodyRows = monthlyRows.map(r => {
+    const pctVal  = (r.pctAchieved * 100).toFixed(1);
+    const barCap  = Math.min(r.pctAchieved * 100, 100).toFixed(1);
+    const barClass = r.pctAchieved >= 1 ? 'high' : r.pctAchieved >= 0.5 ? 'med' : 'low';
+    const varCls  = r.variance >= 0 ? 'amt-pos' : 'amt-neg';
+    const niCls   = r.netIncome >= 0 ? 'amt-pos' : 'amt-neg';
+
+    const batteryCell = r.met
+      ? `<div class="batt-wrap">
+           <div class="batt-track" style="flex:1;">
+             <div class="batt-fill high" style="width:100%;"></div>
+           </div>
+           <span class="batt-met">🏆 TARGET MET!</span>
+         </div>`
+      : `<div class="batt-wrap">
+           <div class="batt-track">
+             <div class="batt-fill ${barClass}" style="width:${barCap}%;"></div>
+           </div>
+           <span class="batt-label">${pctVal}%</span>
+         </div>`;
+
+    const targetStatus = r.met
+      ? '<span class="status-pill met">✅ Target Met</span>'
+      : '<span class="status-pill notmet">🔴 Target Not Met</span>';
+
+    const incomeStatus = r.netIncome >= 0
+      ? '<span class="status-pill profit">✅ Profit</span>'
+      : '<span class="status-pill loss">🔴 Loss</span>';
+
+    return `<tr>
+      <td style="font-weight:600;">${r.month}</td>
+      <td class="num">${peso(r.target)}</td>
+      <td class="num" style="font-weight:600;">${peso(r.progress)}</td>
+      <td class="num ${varCls}">${r.variance >= 0 ? '+' : ''}${peso(r.variance)}</td>
+      <td>${batteryCell}</td>
+      <td class="num" style="font-weight:700;">${pctVal}%</td>
+      <td class="num ${niCls}">${peso(r.netIncome)}</td>
+      <td>${incomeStatus}</td>
+    </tr>`;
+  });
+
+  // Annual total row
+  const annualBarCap  = Math.min(annualPct * 100, 100).toFixed(1);
+  const annualPctDisp = (annualPct * 100).toFixed(1);
+  const annualNiCls   = annualNetIncome >= 0 ? 'amt-pos' : '';
+  const annualVarSign = annualVariance >= 0 ? '+' : '';
+
+  const annualBattery = `<div class="batt-wrap">
+    <div class="batt-track">
+      <div class="batt-fill high" style="width:${annualBarCap}%;"></div>
+    </div>
+    <span class="batt-label">${annualPctDisp}%</span>
+  </div>`;
+
+  const totalRow = `<tr class="bonus-total">
+    <td>ANNUAL TOTAL</td>
+    <td class="num">${peso(annualTarget)}</td>
+    <td class="num">${peso(annualProgress)}</td>
+    <td class="num">${annualVarSign}${peso(annualVariance)}</td>
+    <td>${annualBattery}</td>
+    <td class="num">${annualPctDisp}%</td>
+    <td class="num">${peso(annualNetIncome)}</td>
+    <td style="font-family:'DM Sans',sans-serif; font-size:11px; color:rgba(255,255,255,.8);">
+      ${monthsMet}/12 months met
+    </td>
+  </tr>`;
+
+  el('bonus-table').innerHTML = thead + '<tbody>' + tbodyRows.join('') + totalRow + '</tbody>';
+}
+
+
 
 // ── INIT ──────────────────────────────────────────────────────
 (function init() {
