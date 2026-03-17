@@ -146,7 +146,7 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
 .dp-orange .dtab.active{background:var(--orange);border-color:var(--orange);}
 .dp-teal   .dtab.active{background:var(--teal);  border-color:var(--teal);}
 .dp-red    .dtab.active{background:var(--red);   border-color:var(--red);}
-.drill-chart{position:relative;height:260px;}
+.drill-chart{position:relative;height:320px;}
 .drill-viz-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;align-items:start;}
 @media(max-width:700px){.drill-viz-row{grid-template-columns:1fr;}}
 .drill-viz-bars{display:flex;flex-direction:column;gap:10px;padding-top:4px;}
@@ -556,7 +556,7 @@ function buildViz(id) {
   const chartHtml = `<div class="drill-chart"><canvas id="drillCanvas"></canvas></div>`;
 
   if (id === 'sales') {
-    return `<div class="drill-viz-row">${chartHtml}</div>`;
+    return `<div style="width:100%">${chartHtml}</div>`;
   }
   if (id === 'gp') {
     const b = getCogsBD() || {};
@@ -665,11 +665,61 @@ function initDrillChart(id) {
   const barOpts  = () => ({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:C.text,font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.dataset.label+': '+peso(c.raw)}}},scales:{x:{grid:{display:false},ticks:{color:C.muted,font:{size:10}}},y:{grid:{color:'#f1f5f9'},ticks:{color:C.muted,font:{size:10},callback:v=>peso(v,true)}}}});
 
   if (id === 'sales') {
+    const opts = lineOpts();
+    // add zero reference line
+    opts.scales.y.grid = { color: ctx2 => ctx2.tick.value === 0 ? 'rgba(100,116,139,.4)' : '#f1f5f9', lineWidth: ctx2 => ctx2.tick.value === 0 ? 2 : 1 };
+    opts.scales.y.border = { dash: [4,2] };
     S.charts.drill = new Chart(ctx, {type:'line', data:{labels:MONTHS,datasets:[
-      {label:'Net Sales',data:d.sales,borderColor:C.blue2,backgroundColor:C.blueA,fill:true,tension:.4,pointRadius:3,borderWidth:2},
-      {label:'Gross Profit',data:d.grossProfit,borderColor:C.green2,backgroundColor:C.greenA,fill:false,tension:.4,pointRadius:3,borderWidth:2},
-      {label:'Net Income',data:d.netIncome,borderColor:C.teal2,backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3]}
-    ]}, options:lineOpts()});
+      {
+        label:'Net Sales',
+        data: d.sales,
+        borderColor: C.blue2,
+        backgroundColor: (ctx2) => {
+          const chart = ctx2.chart;
+          const {ctx: c2, chartArea} = chart;
+          if (!chartArea) return C.blueA;
+          const grad = c2.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          grad.addColorStop(0, 'rgba(59,130,246,.18)');
+          grad.addColorStop(1, 'rgba(59,130,246,.01)');
+          return grad;
+        },
+        fill: 'origin', tension:.4, pointRadius:4, pointHoverRadius:6,
+        borderWidth:2.5, pointBackgroundColor:'#fff', pointBorderWidth:2, pointBorderColor:C.blue2
+      },
+      {
+        label:'Gross Profit',
+        data: d.grossProfit,
+        borderColor: C.green2,
+        backgroundColor: (ctx2) => {
+          const chart = ctx2.chart;
+          const {ctx: c2, chartArea} = chart;
+          if (!chartArea) return C.greenA;
+          const grad = c2.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          grad.addColorStop(0, 'rgba(34,197,94,.15)');
+          grad.addColorStop(1, 'rgba(34,197,94,.01)');
+          return grad;
+        },
+        fill: 'origin', tension:.4, pointRadius:4, pointHoverRadius:6,
+        borderWidth:2.5, pointBackgroundColor:'#fff', pointBorderWidth:2, pointBorderColor:C.green2
+      },
+      {
+        label:'Net Income',
+        data: d.netIncome,
+        borderColor: C.blue2,
+        backgroundColor: 'transparent',
+        fill: false, tension:.4, pointRadius:4, pointHoverRadius:6,
+        borderWidth:2, borderDash:[6,4],
+        pointBackgroundColor: d.netIncome.map(v => v >= 0 ? C.green2 : C.red2),
+        pointBorderColor:     d.netIncome.map(v => v >= 0 ? C.green2 : C.red2),
+        pointBorderWidth: 2, pointRadius: 5,
+        segment: {
+          borderColor: ctx2 => {
+            const v0 = ctx2.p0.parsed.y, v1 = ctx2.p1.parsed.y;
+            return (v0 < 0 || v1 < 0) ? C.red2 : C.teal2;
+          }
+        }
+      }
+    ]}, options:opts});
     return;
   }
   if (id === 'gp') {
@@ -683,10 +733,41 @@ function initDrillChart(id) {
     return;
   }
   if (id === 'ni') {
-    S.charts.drill = new Chart(ctx, {type:'bar',data:{labels:MONTHS,datasets:[
-      {label:'Net Income',data:d.netIncome,backgroundColor:d.netIncome.map(v=>v>=0?C.greenA:C.redA),borderColor:d.netIncome.map(v=>v>=0?C.green2:C.red2),borderWidth:1.5,borderRadius:5},
-      {label:'Net Sales',data:d.sales,type:'line',borderColor:C.blue2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2}
-    ]},options:barOpts()});
+    const opts = barOpts();
+    opts.interaction = { mode:'index', intersect:false };
+    opts.scales.y.grid = { color: ctx2 => ctx2.tick.value === 0 ? 'rgba(100,116,139,.5)' : '#f1f5f9', lineWidth: ctx2 => ctx2.tick.value === 0 ? 2 : 1 };
+    S.charts.drill = new Chart(ctx, {type:'bar', data:{labels:MONTHS, datasets:[
+      {
+        label:'Net Income',
+        data: d.netIncome,
+        backgroundColor: d.netIncome.map(v => v >= 0 ? 'rgba(34,197,94,.25)' : 'rgba(239,68,68,.2)'),
+        borderColor:     d.netIncome.map(v => v >= 0 ? C.green2 : C.red2),
+        borderWidth: 2,
+        borderRadius: 5,
+        borderSkipped: false,
+        order: 2
+      },
+      {
+        label:'Net Sales',
+        data: d.sales,
+        type:'line',
+        borderColor: C.blue2,
+        backgroundColor: (ctx2) => {
+          const chart = ctx2.chart;
+          const {ctx: c2, chartArea} = chart;
+          if (!chartArea) return 'transparent';
+          const grad = c2.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          grad.addColorStop(0, 'rgba(59,130,246,.12)');
+          grad.addColorStop(1, 'rgba(59,130,246,.01)');
+          return grad;
+        },
+        fill: 'origin',
+        tension:.4, pointRadius:4, pointHoverRadius:6,
+        borderWidth:2.5,
+        pointBackgroundColor:'#fff', pointBorderWidth:2, pointBorderColor:C.blue2,
+        order: 1
+      }
+    ]}, options:opts});
     return;
   }
 }
