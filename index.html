@@ -66,9 +66,10 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
 .period-badge{background:var(--blue-bg);border:1.5px solid var(--blue-bd);color:var(--blue);font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;}
 
 /* ── KPI GRID ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px;}
-@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:500px){.kpi-grid{grid-template-columns:1fr;}}
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:8px;}
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:700px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:420px){.kpi-grid{grid-template-columns:1fr;}}
 
 /* ── KPI CARD ── */
 .kpi{background:var(--white);border:2px solid var(--gray200);border-radius:var(--radius);padding:20px;cursor:pointer;position:relative;overflow:hidden;transition:all .2s ease;user-select:none;}
@@ -78,6 +79,7 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
 .kpi.active.kpi-orange{border-color:var(--orange);box-shadow:0 0 0 3px rgba(194,65,12,.1),var(--shadow-md);}
 .kpi.active.kpi-teal  {border-color:var(--teal);  box-shadow:0 0 0 3px rgba(14,116,144,.1),var(--shadow-md);}
 .kpi.active.kpi-red   {border-color:var(--red);   box-shadow:0 0 0 3px rgba(185,28,28,.1),var(--shadow-md);}
+.kpi.active.kpi-purple{border-color:#7c3aed;       box-shadow:0 0 0 3px rgba(124,58,237,.1),var(--shadow-md);}
 
 .kpi-dot{width:8px;height:8px;border-radius:50%;margin-bottom:14px;}
 .kpi-blue   .kpi-dot{background:var(--blue);}
@@ -85,6 +87,7 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
 .kpi-orange .kpi-dot{background:var(--orange2);}
 .kpi-teal   .kpi-dot{background:var(--teal2);}
 .kpi-red    .kpi-dot{background:var(--red2);}
+.kpi-purple .kpi-dot{background:#7c3aed;}
 
 .kpi-icon{position:absolute;top:18px;right:18px;font-size:20px;opacity:.5;}
 .kpi-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--gray500);margin-bottom:8px;}
@@ -101,14 +104,16 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
 .kpi.active.kpi-orange .kpi-arrow{background:var(--orange);}
 .kpi.active.kpi-teal   .kpi-arrow{background:var(--teal);}
 .kpi.active.kpi-red    .kpi-arrow{background:var(--red);}
+.kpi.active.kpi-purple .kpi-arrow{background:#7c3aed;}
 .kpi-bar{margin-top:10px;}
 .kpi-bar-track{height:3px;background:var(--gray200);border-radius:99px;overflow:hidden;}
 .kpi-bar-fill{height:100%;border-radius:99px;transition:width .8s ease;}
-.kpi-blue  .kpi-bar-fill{background:var(--blue);}
-.kpi-green .kpi-bar-fill{background:var(--green2);}
+.kpi-blue   .kpi-bar-fill{background:var(--blue);}
+.kpi-green  .kpi-bar-fill{background:var(--green2);}
 .kpi-orange .kpi-bar-fill{background:var(--orange2);}
-.kpi-teal  .kpi-bar-fill{background:var(--teal2);}
-.kpi-red   .kpi-bar-fill{background:var(--red2);}
+.kpi-teal   .kpi-bar-fill{background:var(--teal2);}
+.kpi-red    .kpi-bar-fill{background:var(--red2);}
+.kpi-purple .kpi-bar-fill{background:#7c3aed;}
 
 /* ── DRILL PANEL ── */
 .drill-panel{background:var(--white);border:2px solid var(--blue);border-radius:var(--radius);overflow:hidden;margin-top:12px;margin-bottom:20px;box-shadow:var(--shadow-lg);animation:slideDown .25s ease;}
@@ -116,12 +121,14 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
 .drill-panel.dp-orange{border-color:var(--orange);}
 .drill-panel.dp-teal  {border-color:var(--teal);}
 .drill-panel.dp-red   {border-color:var(--red);}
+.drill-panel.dp-purple{border-color:#7c3aed;}
 @keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
 .drill-header{padding:16px 22px;background:var(--blue-bg);border-bottom:1px solid var(--blue-bd);display:flex;align-items:center;justify-content:space-between;}
 .dp-green  .drill-header{background:var(--green-bg); border-bottom-color:var(--green-bd);}
 .dp-orange .drill-header{background:var(--orange-bg);border-bottom-color:var(--orange-bd);}
 .dp-teal   .drill-header{background:var(--teal-bg);  border-bottom-color:var(--teal-bd);}
 .dp-red    .drill-header{background:var(--red-bg);   border-bottom-color:var(--red-bd);}
+.dp-purple .drill-header{background:#f5f3ff;          border-bottom-color:#ddd6fe;}
 .drill-header-left h3{font-size:14px;font-weight:700;color:var(--gray900);}
 .drill-header-left p{font-size:11.5px;color:var(--gray500);margin-top:2px;}
 .drill-close{width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;background:rgba(0,0,0,.08);color:var(--gray700);display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .15s;font-family:var(--font);}
@@ -139,7 +146,13 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
 .dp-orange .dtab.active{background:var(--orange);border-color:var(--orange);}
 .dp-teal   .dtab.active{background:var(--teal);  border-color:var(--teal);}
 .dp-red    .dtab.active{background:var(--red);   border-color:var(--red);}
-.drill-chart{position:relative;height:280px;}
+.drill-chart{position:relative;height:260px;}
+.drill-viz-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;align-items:start;}
+@media(max-width:700px){.drill-viz-row{grid-template-columns:1fr;}}
+.drill-viz-bars{display:flex;flex-direction:column;gap:10px;padding-top:4px;}
+.drill-tbl-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--gray400);margin-bottom:10px;}
+.drill-chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.drill-chart-grid .drill-chart{height:260px;}
 
 /* ── BOTTOM ROW ── */
 .bottom-row{display:grid;grid-template-columns:1fr 320px;gap:12px;margin-top:12px;}
@@ -246,11 +259,8 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
       <div class="nav-sub">Statement of Comprehensive Income</div>
     </div>
   </div>
-  <div class="nav-tabs">
+  <div class="nav-tabs" style="display:none">
     <button class="nav-tab active" onclick="setView('overview')" id="tab-overview">📊 Overview</button>
-    <button class="nav-tab" onclick="setView('income')"  id="tab-income" >📄 Income</button>
-    <button class="nav-tab" onclick="setView('costs')"   id="tab-costs"  >🔍 Costs</button>
-    <button class="nav-tab" onclick="setView('opex')"    id="tab-opex"   >💼 OpEx</button>
     <button class="nav-tab" onclick="setView('bonus')"   id="tab-bonus"  >🎯 Bonus</button>
   </div>
   <div class="nav-right">
@@ -313,75 +323,8 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
     </div>
   </div>
 
-  <!-- ── INCOME ── -->
-  <div class="view" id="view-income">
-    <div class="period-head" style="display:flex;margin-bottom:20px;">
-      <div><div class="period-title">Income Statement</div><div class="period-sub">Monthly breakdown — all line items</div></div>
-    </div>
-    <div class="tbl-wrap">
-      <div class="tbl-head"><h3>Statement of Comprehensive Income — Monthly</h3></div>
-      <div class="tbl-scroll"><table class="data-table" id="isTable"></table></div>
-    </div>
-  </div>
 
-  <!-- ── COSTS ── -->
-  <div class="view" id="view-costs">
-    <div class="period-head" style="display:flex;margin-bottom:20px;">
-      <div><div class="period-title">Cost Analysis</div><div class="period-sub">Direct costs &amp; gross margin trend</div></div>
-    </div>
-    <div class="chart-grid">
-      <div class="card"><div class="card-head"><div class="card-head-l"><h3>COGS Monthly Trend</h3><p>Direct costs vs gross profit</p></div></div><div class="chart-area"><canvas id="cogsTrend"></canvas></div></div>
-      <div class="card"><div class="card-head"><div class="card-head-l"><h3>Gross Margin % Trend</h3><p>Month-by-month margin %</p></div></div><div class="chart-area"><canvas id="cogsGP"></canvas></div></div>
-    </div>
-    <div class="tbl-wrap">
-      <div class="tbl-head"><h3>Direct Costs — Monthly Detail</h3></div>
-      <div class="tbl-scroll"><table class="data-table" id="cogsTable"></table></div>
-    </div>
-  </div>
 
-  <!-- ── OPEX ── -->
-  <div class="view" id="view-opex">
-    <div class="period-head" style="display:flex;margin-bottom:20px;">
-      <div><div class="period-title">OpEx Breakdown</div><div class="period-sub">Operating expenses &amp; compensation</div></div>
-    </div>
-    <div class="chart-grid">
-      <div class="card"><div class="card-head"><div class="card-head-l"><h3>OpEx Monthly Trend</h3><p>Operating expenses vs sales</p></div></div><div class="chart-area"><canvas id="opexTrend"></canvas></div></div>
-      <div class="card"><div class="card-head"><div class="card-head-l"><h3>Compensation Trend</h3><p>Payroll vs total OpEx</p></div></div><div class="chart-area"><canvas id="compTrend"></canvas></div></div>
-    </div>
-    <div class="tbl-wrap">
-      <div class="tbl-head"><h3>Compensation &amp; Benefits — Monthly</h3></div>
-      <div class="tbl-scroll"><table class="data-table" id="compTable"></table></div>
-    </div>
-  </div>
-
-  <!-- ── BONUS ── -->
-  <div class="view" id="view-bonus">
-    <div class="bonus-hero">
-      <div class="bh-label">📊 Annual Commission Achievement — FY <span id="bhYear">2025</span></div>
-      <div class="bh-title">Performance Bonus Monitoring</div>
-      <div class="bh-pct" id="bhPct">—<span>%</span></div>
-      <div class="bh-bar-wrap"><div class="bh-bar-fill" id="bhBar" style="width:0%"></div></div>
-      <div class="bh-stats">
-        <div><div class="bh-stat-val" id="bhProgress">—</div><div class="bh-stat-lbl">Total Progress</div></div>
-        <div><div class="bh-stat-val" id="bhTarget">—</div><div class="bh-stat-lbl">Annual Target</div></div>
-        <div><div class="bh-stat-val" id="bhRemaining">—</div><div class="bh-stat-lbl">Remaining</div></div>
-      </div>
-    </div>
-    <div class="bonus-cards">
-      <div class="bcard g"><div class="bcard-lbl">Months Target Met</div><div class="bcard-val" id="bhMet">—</div><div class="bcard-sub">out of 12 months</div></div>
-      <div class="bcard o"><div class="bcard-lbl">Months Below Target</div><div class="bcard-val" id="bhMiss">—</div><div class="bcard-sub">need improvement</div></div>
-      <div class="bcard" ><div class="bcard-lbl">Monthly Target</div><div class="bcard-val" id="bhMonthly">₱50,000</div><div class="bcard-sub">per month</div></div>
-    </div>
-    <div class="bonus-cfg">
-      <label>💡 Monthly Commission Target (₱):</label>
-      <input type="number" id="bonusInput" value="50000" min="0" step="1000" oninput="renderBonus()"/>
-      <span style="color:var(--blue2);font-size:11px;">← Adjust to recalculate instantly</span>
-    </div>
-    <div class="tbl-wrap">
-      <div class="tbl-head"><h3>Monthly Commission Progress</h3><span style="font-size:11px;color:var(--gray500)">Progress = Staff (2%) + Sales (3%) Commissions</span></div>
-      <div class="tbl-scroll"><table class="data-table" id="bonusTable"></table></div>
-    </div>
-  </div>
 
 </div>
 
@@ -482,8 +425,6 @@ function renderAll() {
   el('trendBadge').textContent = 'FY ' + S.year;
   el('donutBadge').textContent = lbl;
   renderKPIs(); renderTrend(); renderDonut();
-  renderISTable(); renderCOGSTable(); renderCompTable();
-  renderCOGSTrend(); renderCOGSGP(); renderOpExTrend(); renderCompTrend();
   renderBonus();
   if (S.activeDrill) openDrill(S.activeDrill);
 }
@@ -510,7 +451,18 @@ function renderKPIs() {
     { id:'ni', cls: v.ni >= 0 ? 'kpi-teal' : 'kpi-red', icon: v.ni >= 0 ? '🏦' : '📉', label:'Net Income',
       value: peso(v.ni, true), meta: 'Net Margin: ' + pct(nm),
       change: v.ni >= 0 ? '▲ ' + pct(nm) + ' NM' : '▼ Net Loss', chCls: v.ni >= 0 ? 'ch-up' : 'ch-down',
-      bar: Math.min(Math.abs(nm) * 300, 100) }
+      bar: Math.min(Math.abs(nm) * 300, 100) },
+    (()=>{
+      const mt = 50000, at = mt*12;
+      const sd = S.sum, d2 = S.data;
+      const tp = MONTHS.reduce((s,m,i)=> s + (sd ? (sd.opex.totalCommissions[m]||0) : (d2.monthlyTrend.opex[i]*0.05)), 0);
+      const ap = at > 0 ? tp/at : 0;
+      const metC = MONTHS.filter((m,i)=> (sd ? (sd.opex.totalCommissions[m]||0) : (d2.monthlyTrend.opex[i]*0.05)) >= mt).length;
+      return { id:'bonus', cls:'kpi-purple', icon:'🎯', label:'Bonus Monitoring',
+        value: (ap*100).toFixed(1)+'%', meta: metC + '/12 months met · Target: '+peso(at,true),
+        change: tp >= at ? '✅ Annual Target Met!' : peso(at-tp,true)+' remaining', chCls: tp>=at?'ch-up':'ch-flat',
+        bar: Math.min(ap*100,100) };
+    })()
   ];
 
   el('kpiGrid').innerHTML = cards.map(c =>
@@ -543,43 +495,40 @@ function toggleDrill(id) {
 
 function openDrill(id) {
   if (!S.data) return;
-  if (!S.drillTab[id]) S.drillTab[id] = 'chart';
-  const tab = S.drillTab[id];
 
   const cfg = {
-    sales: { title:'Net Sales Detail',    sub:'Revenue & profit breakdown',     cls:'' },
-    gp:    { title:'Gross Profit Detail', sub:'COGS & margin analysis',          cls:'dp-green' },
-    opex:  { title:'OpEx Breakdown',      sub:'Operating expense structure',     cls:'dp-orange' },
-    ni:    { title:'Net Income Detail',   sub:'Bottom-line analysis',            cls: getVals().ni >= 0 ? 'dp-teal' : 'dp-red' }
+    sales: { title:'Net Sales — Full Breakdown',   sub:'Revenue, profit & income trend',   cls:'' },
+    gp:    { title:'Gross Profit — COGS Detail',   sub:'Cost of goods breakdown',           cls:'dp-green' },
+    opex:  { title:'Operating Expenses — Detail',  sub:'Compensation & expense structure',  cls:'dp-orange' },
+    ni:    { title:'Net Income — Detail',           sub:'Bottom-line performance',           cls: getVals().ni >= 0 ? 'dp-teal' : 'dp-red' },
+    bonus: { title:'🎯 Bonus Monitoring',           sub:'Monthly commission vs target',      cls:'dp-purple' }
   };
   const c = cfg[id];
-
-  const tabMap = {
-    sales: [{k:'chart',l:'📊 Chart'},{k:'table',l:'📋 Table'}],
-    gp:    [{k:'chart',l:'📊 COGS Donut'},{k:'trend',l:'📈 Trend'},{k:'table',l:'📋 Table'}],
-    opex:  [{k:'chart',l:'📊 Donut'},{k:'bars',l:'📏 Bars'},{k:'table',l:'📋 Table'}],
-    ni:    [{k:'chart',l:'📊 Chart'},{k:'table',l:'📋 Table'}]
-  };
-
-  const tabHtml = (tabMap[id] || []).map(t =>
-    `<button class="dtab${tab === t.k ? ' active' : ''}" onclick="setDrillTab('${id}','${t.k}')">${t.l}</button>`
-  ).join('');
 
   const panel = el('drillPanel');
   panel.style.display = 'block';
   panel.className = 'drill-panel ' + c.cls;
+
+  const bodyContent = id === 'bonus'
+    ? `<div class="drill-body">
+        <div class="drill-stats">${buildStats(id)}</div>
+        ${buildDrillTable(id)}
+       </div>`
+    : `<div class="drill-body">
+        <div class="drill-stats">${buildStats(id)}</div>
+        <div class="drill-viz">${buildViz(id)}</div>
+        <div class="drill-tbl-label">Monthly Breakdown</div>
+        ${buildDrillTable(id)}
+       </div>`;
+
   panel.innerHTML = `
     <div class="drill-header">
       <div class="drill-header-left"><h3>${c.title}</h3><p>${c.sub} · ${plbl()} ${S.year}</p></div>
       <button class="drill-close" onclick="toggleDrill('${id}')">✕</button>
     </div>
-    <div class="drill-body">
-      <div class="drill-stats">${buildStats(id)}</div>
-      <div class="drill-tabs">${tabHtml}</div>
-      <div id="drillContent">${buildContent(id, tab)}</div>
-    </div>`;
+    ${bodyContent}`;
 
-  setTimeout(() => { initDrillChart(id, tab); panel.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 60);
+  setTimeout(() => { if (id !== 'bonus') initDrillChart(id); panel.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 60);
 }
 function setDrillTab(id, tab) { S.drillTab[id] = tab; openDrill(id); }
 
@@ -591,69 +540,155 @@ function buildStats(id) {
     sales: [{v:peso(v.sales,true),l:'Net Sales'},{v:peso(v.gp,true),l:'Gross Profit'},{v:pct(gm),l:'GM %'},{v:peso(v.ni,true),l:'Net Income'}],
     gp:    [{v:peso(v.gp,true),l:'Gross Profit'},{v:peso(v.cogs,true),l:'Total COGS'},{v:pct(gm),l:'GM %'},{v:peso(v.sales,true),l:'Net Sales'}],
     opex:  [{v:peso(v.opex,true),l:'Total OpEx'},{v:peso(ob.comp||0,true),l:'Compensation'},{v:peso(ob.ga||0,true),l:'G&A'},{v:peso(ob.comm||0,true),l:'Commissions'}],
-    ni:    [{v:peso(v.ni,true),l:'Net Income'},{v:peso(v.sales,true),l:'Revenue'},{v:peso(v.gp,true),l:'Gross Profit'},{v:pct(nm),l:'Net Margin'}]
+    ni:    [{v:peso(v.ni,true),l:'Net Income'},{v:peso(v.sales,true),l:'Revenue'},{v:peso(v.gp,true),l:'Gross Profit'},{v:pct(nm),l:'Net Margin'}],
+    bonus: (()=>{
+      const sd=S.sum,d2=S.data,mt=50000,at=mt*12;
+      const tp=MONTHS.reduce((s,m,i)=>s+(sd?(sd.opex.totalCommissions[m]||0):(d2.monthlyTrend.opex[i]*0.05)),0);
+      const metC=MONTHS.filter((m,i)=>(sd?(sd.opex.totalCommissions[m]||0):(d2.monthlyTrend.opex[i]*0.05))>=mt).length;
+      return [{v:peso(tp,true),l:'Total Progress'},{v:peso(at,true),l:'Annual Target'},{v:metC+'/12',l:'Months Met'},{v:((tp/at)*100).toFixed(1)+'%',l:'Achievement'}];
+    })()
   };
   return (map[id] || []).map(s => `<div class="dstat"><div class="dstat-val">${s.v}</div><div class="dstat-lbl">${s.l}</div></div>`).join('');
 }
 
-function buildContent(id, tab) {
-  if (tab === 'table') return buildDrillTable(id);
-  if (tab === 'bars')  return buildDrillBars();
-  return `<div class="drill-chart"><canvas id="drillCanvas"></canvas></div>`;
+function buildViz(id) {
+  // Chart on left, ranked bars on right
+  const chartHtml = `<div class="drill-chart"><canvas id="drillCanvas"></canvas></div>`;
+
+  if (id === 'sales') {
+    return `<div class="drill-viz-row">${chartHtml}</div>`;
+  }
+  if (id === 'gp') {
+    const b = getCogsBD() || {};
+    const items = [
+      {l:'Materials',v:b.mat,c:C.blue2},{l:'Office Supplies',v:b.supp,c:C.green2},
+      {l:'Merchandise Sold',v:b.merch,c:C.orange2},{l:'Furniture',v:b.furn,c:C.teal2},
+      {l:'Commissions',v:b.comm,c:C.red2},{l:'Other Direct',v:b.other,c:'#8b5cf6'}
+    ].sort((a,b)=>b.v-a.v);
+    const max = Math.max(...items.map(i=>i.v),1), tot = items.reduce((s,i)=>s+i.v,0)||1;
+    const bars = items.map(it=>`
+      <div class="mb"><div class="mb-top">
+        <span class="mb-name"><span class="mb-dot" style="background:${it.c}"></span>${it.l}</span>
+        <span class="mb-val">${peso(it.v,true)} <span style="color:var(--gray400);font-size:10px">${(it.v/tot*100).toFixed(0)}%</span></span>
+      </div><div class="mb-track"><div class="mb-fill" style="width:${(it.v/max*100).toFixed(1)}%;background:${it.c}"></div></div></div>`).join('');
+    return `<div class="drill-viz-row">${chartHtml}<div class="drill-viz-bars"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray400);margin-bottom:10px;">Ranked by Cost</div>${bars}</div></div>`;
+  }
+  if (id === 'opex') {
+    const ob = getOpexBD() || {};
+    const cd = getCompD() || {};
+    const compItems = [
+      {n:'Salaries & Wages',v:cd.sal,c:C.comp[0]},{n:'Allowances',v:cd.all,c:C.comp[1]},
+      {n:'OT / Holidays',v:cd.ot,c:C.comp[2]},{n:'13th Month',v:cd.b13,c:C.comp[3]},
+      {n:'Statutory Ben.',v:cd.stat,c:C.comp[4]},{n:'Service Inc.',v:cd.sil,c:C.comp[5]}
+    ].sort((a,b)=>b.v-a.v);
+    const max = Math.max(...compItems.map(i=>i.v),1);
+    const bars = compItems.map(it=>`
+      <div class="mb"><div class="mb-top">
+        <span class="mb-name"><span class="mb-dot" style="background:${it.c}"></span>${it.n}</span>
+        <span class="mb-val">${peso(it.v,true)}</span>
+      </div><div class="mb-track"><div class="mb-fill" style="width:${(it.v/max*100).toFixed(1)}%;background:${it.c}"></div></div></div>`).join('');
+    return `<div class="drill-viz-row">${chartHtml}<div class="drill-viz-bars"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray400);margin-bottom:10px;">Compensation Breakdown</div>${bars}</div></div>`;
+  }
+  // ni / bonus
+  return `<div class="drill-viz-row">${chartHtml}</div>`;
 }
 
 function buildDrillTable(id) {
   const d = S.data.monthlyTrend;
   const H = cols => '<thead><tr>' + cols.map((c,i) => `<th${i ? ' class="num"' : ''}>${c}</th>`).join('') + '</tr></thead>';
+  const wrap = html => `<div class="tbl-scroll">${html}</div>`;
   if (id === 'sales') {
-    return '<table class="data-table">' + H(['MONTH','Net Sales','Gross Profit','COGS','Net Income']) +
-      '<tbody>' + MONTHS.map((m,i) => `<tr><td>${m}</td><td class="num">${peso(d.sales[i])}</td><td class="num ${d.grossProfit[i]>=0?'vp':'vn'}">${peso(d.grossProfit[i])}</td><td class="num amt-neg">${peso(d.cogs[i])}</td><td class="num ${d.netIncome[i]>=0?'vp':'vn'}">${peso(d.netIncome[i])}</td></tr>`).join('') +
-      `<tr class="tot"><td>YTD</td><td class="num">${peso(sum(d.sales))}</td><td class="num">${peso(sum(d.grossProfit))}</td><td class="num">${peso(sum(d.cogs))}</td><td class="num">${peso(sum(d.netIncome))}</td></tr></tbody></table>`;
+    return buildISFullTable();
   }
   if (id === 'gp' && S.sum) {
     const sd = S.sum;
     const items = [{l:'Materials',d:sd.cogs.materials},{l:'Office Supplies',d:sd.cogs.officeSuppliesDirect},{l:'Merchandise Sold',d:sd.cogs.merchandiseSold},{l:'Office Furniture',d:sd.cogs.officeFurniture},{l:'Commissions (Dir)',d:sd.cogs.commissionsDir},{l:'Other Direct',d:sd.cogs.otherDirect}];
-    return '<table class="data-table">' + H(['COGS ITEM',...MONTHS,'YTD']) +
+    return wrap('<table class="data-table">' + H(['COGS ITEM',...MONTHS,'YTD']) +
       '<tbody>' + items.map(it => `<tr><td>${it.l}</td>${MONTHS.map(m=>`<td class="num amt-neg">${peso(it.d[m]||0)}</td>`).join('')}<td class="num amt-neg">${peso(it.d.YTD||0)}</td></tr>`).join('') +
-      `<tr class="tot"><td>Total COGS</td>${MONTHS.map(m=>`<td class="num">${peso(sd.cogs.total[m]||0)}</td>`).join('')}<td class="num">${peso(sd.cogs.total.YTD||0)}</td></tr></tbody></table>`;
+      `<tr class="tot"><td>Total COGS</td>${MONTHS.map(m=>`<td class="num">${peso(sd.cogs.total[m]||0)}</td>`).join('')}<td class="num">${peso(sd.cogs.total.YTD||0)}</td></tr></tbody></table>`);
   }
   if (id === 'opex' && S.sum) {
     const sd = S.sum;
-    const items = [{l:'Compensation',d:sd.compensation.total},{l:'G&A Expenses',d:sd.opex.gaExpenses},{l:'Commissions',d:sd.opex.totalCommissions}];
-    return '<table class="data-table">' + H(['OPEX ITEM',...MONTHS,'YTD']) +
-      '<tbody>' + items.map(it => `<tr><td>${it.l}</td>${MONTHS.map(m=>`<td class="num">${peso(it.d[m]||0)}</td>`).join('')}<td class="num">${peso(it.d.YTD||0)}</td></tr>`).join('') + '</tbody></table>';
+    const items = [{l:'Salaries & Wages',d:sd.compensation.salariesWages},{l:'Allowances',d:sd.compensation.allowances},{l:'OT / Holidays',d:sd.compensation.overtime},{l:'13th Month / Bonus',d:sd.compensation.bonus13th},{l:'Statutory Benefits',d:sd.compensation.statutoryBen},{l:'Service Incentive',d:sd.compensation.sil}];
+    return wrap('<table class="data-table">' + H(['COMP ITEM',...MONTHS,'YTD']) +
+      '<tbody>' + items.map(it => `<tr><td>${it.l}</td>${MONTHS.map(m=>`<td class="num">${peso(it.d[m]||0)}</td>`).join('')}<td class="num">${peso(it.d.YTD||0)}</td></tr>`).join('') +
+      `<tr class="tot"><td>Total Compensation</td>${MONTHS.map(m=>`<td class="num">${peso(sd.compensation.total[m]||0)}</td>`).join('')}<td class="num">${peso(sd.compensation.total.YTD||0)}</td></tr></tbody></table>`);
   }
-  return '<table class="data-table">' + H(['MONTH','Net Sales','OpEx','Net Income']) +
-    '<tbody>' + MONTHS.map((m,i) => `<tr><td>${m}</td><td class="num">${peso(d.sales[i])}</td><td class="num amt-neg">${peso(d.opex[i])}</td><td class="num ${d.netIncome[i]>=0?'vp':'vn'}">${peso(d.netIncome[i])}</td></tr>`).join('') +
-    `<tr class="tot"><td>YTD</td><td class="num">${peso(sum(d.sales))}</td><td class="num">${peso(sum(d.opex))}</td><td class="num">${peso(sum(d.netIncome))}</td></tr></tbody></table>`;
+  if (id === 'bonus') return buildBonusTable();
+  return wrap('<table class="data-table">' + H(['MONTH','Net Sales','COGS','OpEx','Net Income']) +
+    '<tbody>' + MONTHS.map((m,i) => `<tr><td>${m}</td><td class="num">${peso(d.sales[i])}</td><td class="num amt-neg">${peso(d.cogs[i])}</td><td class="num amt-neg">${peso(d.opex[i])}</td><td class="num ${d.netIncome[i]>=0?'vp':'vn'}">${peso(d.netIncome[i])}</td></tr>`).join('') +
+    `<tr class="tot"><td>YTD</td><td class="num">${peso(sum(d.sales))}</td><td class="num">${peso(sum(d.cogs))}</td><td class="num">${peso(sum(d.opex))}</td><td class="num">${peso(sum(d.netIncome))}</td></tr></tbody></table>`);
 }
 
-function buildDrillBars() {
-  const ob = getOpexBD(); if (!ob) return '';
-  const items = [{n:'Compensation',v:ob.comp,c:C.blue2},{n:'G&A Expenses',v:ob.ga,c:C.green2},{n:'Commissions',v:ob.comm,c:C.orange2}].sort((a,b)=>b.v-a.v);
-  const mx = Math.max(...items.map(i=>i.v),1), tot = items.reduce((s,i)=>s+i.v,0)||1;
-  return '<div style="display:flex;flex-direction:column;gap:14px;padding:4px 0;">' +
-    items.map(it => `<div class="mb"><div class="mb-top"><span class="mb-name"><span class="mb-dot" style="background:${it.c}"></span>${it.n}</span><span class="mb-val">${peso(it.v,true)} <span style="color:var(--gray500);font-size:10px">${(it.v/tot*100).toFixed(0)}%</span></span></div><div class="mb-track"><div class="mb-fill" style="width:${(it.v/mx*100).toFixed(1)}%;background:${it.c}"></div></div></div>`).join('') + '</div>';
+function buildCompTable() {
+  if (!S.sum) return '<p style="color:var(--gray500);font-size:12px;padding:12px;">No summary data yet.</p>';
+  const sd = S.sum;
+  const items = [
+    {l:'Salaries & Wages',   d:sd.compensation.salariesWages},
+    {l:'Allowances',         d:sd.compensation.allowances},
+    {l:'Overtime / Holidays',d:sd.compensation.overtime},
+    {l:'13th Month / Bonus', d:sd.compensation.bonus13th},
+    {l:'Statutory Benefits', d:sd.compensation.statutoryBen},
+    {l:'Service Incentive',  d:sd.compensation.sil}
+  ];
+  const H = cols => '<thead><tr>' + cols.map((c,i) => `<th${i?' class="num"':''}>${c}</th>`).join('') + '</tr></thead>';
+  return `<div class="tbl-scroll"><table class="data-table">${H(['COMP ITEM',...MONTHS,'YTD'])}<tbody>` +
+    items.map(it => `<tr><td>${it.l}</td>${MONTHS.map(m=>`<td class="num">${peso(it.d[m]||0)}</td>`).join('')}<td class="num">${peso(it.d.YTD||0)}</td></tr>`).join('') +
+    `<tr class="tot"><td>Total Compensation</td>${MONTHS.map(m=>`<td class="num">${peso(sd.compensation.total[m]||0)}</td>`).join('')}<td class="num">${peso(sd.compensation.total.YTD||0)}</td></tr>` +
+    '</tbody></table></div>';
 }
 
-function initDrillChart(id, tab) {
-  const ctx = el('drillCanvas'); if (!ctx) return;
-  if (S.charts.drill) { S.charts.drill.destroy(); delete S.charts.drill; }
+function buildISFullTable() {
   const d = S.data.monthlyTrend;
-  const opts = {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:C.text,font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.dataset.label+': '+peso(c.raw)}}},scales:{x:{ticks:{color:C.muted,font:{size:10},maxRotation:35},grid:{color:'#f1f5f9'}},y:{ticks:{color:C.muted,font:{size:10},callback:v=>peso(v,true)},grid:{color:'#f1f5f9'}}}};
-  if (id === 'gp' && tab === 'chart') {
+  const H = cols => '<thead><tr>' + cols.map((c,i) => `<th${i?' class="num"':''}>${c}</th>`).join('') + '</tr></thead>';
+  const sec = lbl => `<tr style="background:var(--blue-bg)"><td colspan="${MONTHS.length+2}" style="font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);padding:7px 14px;">${lbl}</td></tr>`;
+  const row = (lbl, arr, cls='', neg=false) => {
+    const cells = arr.map(v => `<td class="num${neg&&v>0?' amt-neg':''}">${peso(v)}</td>`).join('');
+    const ytdV = sum(arr);
+    return `<tr${cls?` class="${cls}"`:''}}><td>${lbl}</td>${cells}<td class="num${neg&&ytdV>0?' amt-neg':''}">${peso(ytdV)}</td></tr>`;
+  };
+  return `<div class="tbl-scroll"><table class="data-table">${H(['DESCRIPTION',...MONTHS,'YTD'])}<tbody>` +
+    sec('── Revenues') + row('Net Sales', d.sales) +
+    sec('── Direct Costs (COGS)') + row('Total COGS', d.cogs, '', true) + row('Gross Profit', d.grossProfit, 'tot') +
+    sec('── Operating Expenses') + row('Total OpEx', d.opex, '', true) +
+    row('Net Income (Before Tax)', d.netIncome, 'tot') +
+    '</tbody></table></div>';
+}
+
+function initDrillChart(id) {
+  const d = S.data.monthlyTrend;
+  const ctx = el('drillCanvas');
+  if (!ctx) return;
+  if (S.charts.drill)  { S.charts.drill.destroy();  delete S.charts.drill; }
+
+  const lineOpts = () => ({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:C.text,font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.dataset.label+': '+peso(c.raw)}}},scales:{x:{grid:{display:false},ticks:{color:C.muted,font:{size:10}}},y:{grid:{color:'#f1f5f9'},ticks:{color:C.muted,font:{size:10},callback:v=>peso(v,true)}}}});
+  const barOpts  = () => ({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:C.text,font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.dataset.label+': '+peso(c.raw)}}},scales:{x:{grid:{display:false},ticks:{color:C.muted,font:{size:10}}},y:{grid:{color:'#f1f5f9'},ticks:{color:C.muted,font:{size:10},callback:v=>peso(v,true)}}}});
+
+  if (id === 'sales') {
+    S.charts.drill = new Chart(ctx, {type:'line', data:{labels:MONTHS,datasets:[
+      {label:'Net Sales',data:d.sales,borderColor:C.blue2,backgroundColor:C.blueA,fill:true,tension:.4,pointRadius:3,borderWidth:2},
+      {label:'Gross Profit',data:d.grossProfit,borderColor:C.green2,backgroundColor:C.greenA,fill:false,tension:.4,pointRadius:3,borderWidth:2},
+      {label:'Net Income',data:d.netIncome,borderColor:C.teal2,backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3]}
+    ]}, options:lineOpts()});
+    return;
+  }
+  if (id === 'gp') {
     const b = getCogsBD() || {};
-    S.charts.drill = new Chart(ctx, {type:'doughnut', data:{labels:['Materials','Office Supp.','Merchandise','Furniture','Commissions','Other'],datasets:[{data:[b.mat,b.supp,b.merch,b.furn,b.comm,b.other],backgroundColor:[C.blue2,C.green2,C.orange2,C.teal2,C.red2,'#8b5cf6'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},tooltip:{callbacks:{label:c=>' '+c.label+': '+peso(c.raw)}}}}}); return;
+    S.charts.drill = new Chart(ctx, {type:'doughnut',data:{labels:['Materials','Office Supp.','Merchandise','Furniture','Commissions','Other'],datasets:[{data:[b.mat||0,b.supp||0,b.merch||0,b.furn||0,b.comm||0,b.other||0],backgroundColor:[C.blue2,C.green2,C.orange2,C.teal2,C.red2,'#8b5cf6'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},tooltip:{callbacks:{label:c=>' '+c.label+': '+peso(c.raw)}}}}});
+    return;
   }
-  if (id === 'opex' && tab === 'chart') {
+  if (id === 'opex') {
     const ob = getOpexBD() || {};
-    S.charts.drill = new Chart(ctx, {type:'doughnut', data:{labels:['Compensation','G&A Expenses','Commissions'],datasets:[{data:[ob.comp,ob.ga,ob.comm],backgroundColor:[C.blue2,C.green2,C.orange2],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},tooltip:{callbacks:{label:c=>' '+c.label+': '+peso(c.raw)}}}}}); return;
+    S.charts.drill = new Chart(ctx, {type:'doughnut',data:{labels:['Compensation','G&A Expenses','Commissions'],datasets:[{data:[ob.comp||0,ob.ga||0,ob.comm||0],backgroundColor:[C.blue2,C.green2,C.orange2],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},tooltip:{callbacks:{label:c=>' '+c.label+': '+peso(c.raw)}}}}});
+    return;
   }
-  let type = 'bar', labels = MONTHS, datasets = [];
-  if (id === 'sales') { type='line'; datasets=[{label:'Net Sales',data:d.sales,borderColor:C.blue2,backgroundColor:C.blueA,fill:true,tension:.4,pointRadius:3,borderWidth:2},{label:'Gross Profit',data:d.grossProfit,borderColor:C.green2,backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3]}]; }
-  else if (id === 'gp') { datasets=[{label:'COGS',data:d.cogs,backgroundColor:C.orangeA,borderColor:C.orange2,borderWidth:1.5,borderRadius:5},{label:'Gross Profit',data:d.grossProfit,type:'line',borderColor:C.green2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2}]; }
-  else if (id === 'ni') { datasets=[{label:'Net Sales',data:d.sales,type:'line',borderColor:C.blue2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2,borderDash:[4,3]},{label:'Net Income',data:d.netIncome,backgroundColor:d.netIncome.map(v=>v>=0?C.greenA:C.redA),borderColor:d.netIncome.map(v=>v>=0?C.green2:C.red2),borderWidth:1.5,borderRadius:4}]; }
-  if (datasets.length) S.charts.drill = new Chart(ctx, {type, data:{labels,datasets}, options:opts});
+  if (id === 'ni') {
+    S.charts.drill = new Chart(ctx, {type:'bar',data:{labels:MONTHS,datasets:[
+      {label:'Net Income',data:d.netIncome,backgroundColor:d.netIncome.map(v=>v>=0?C.greenA:C.redA),borderColor:d.netIncome.map(v=>v>=0?C.green2:C.red2),borderWidth:1.5,borderRadius:5},
+      {label:'Net Sales',data:d.sales,type:'line',borderColor:C.blue2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2}
+    ]},options:barOpts()});
+    return;
+  }
 }
 
 /* ═══ CHARTS ═══ */
@@ -712,48 +747,84 @@ function renderCompTrend() {
   S.charts.compTrend = new Chart(el('compTrend'), {type:'line',data:{labels:MONTHS,datasets:[{label:'Compensation',data:comp,borderColor:C.blue2,backgroundColor:C.blueA,fill:true,tension:.4,pointRadius:3,borderWidth:2},{label:'Total OpEx',data:d.opex,borderColor:C.orange2,backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:2,borderDash:[4,3]}]},options:mkLineOpts()});
 }
 
-/* ═══ BONUS ═══ */
-function renderBonus() {
-  const sd = S.sum, d = S.data; if (!sd && !d) return;
-  const mt = parseFloat(el('bonusInput')?.value || 50000) || 50000;
-  const at = mt * 12;
-  el('bhYear').textContent = S.year;
-  el('bhMonthly').textContent = peso(mt);
+/* ═══ BONUS TABLE BUILDER ═══ */
+function buildBonusTable() {
+  const sd = S.sum, d = S.data; if (!sd && !d) return '<p style="padding:16px;color:var(--gray500)">No data yet.</p>';
+  const mt = 50000, at = mt * 12;
 
   const rows = MONTHS.map((m,i) => {
     const prog = sd ? (sd.opex.totalCommissions[m]||0) : (d.monthlyTrend.opex[i]*0.05);
     const ni   = sd ? (sd.netIncome?.afterTax?.[m]||0) : (d.monthlyTrend.netIncome[i]||0);
     const pa   = mt > 0 ? prog/mt : 0;
-    return {m, target:mt, prog, var:prog-mt, pa, met:pa>=1, ni};
+    return {m, prog, ni, va:prog-mt, pa, met:pa>=1};
   });
 
-  const tp = rows.reduce((s,r)=>s+r.prog,0);
-  const tni = rows.reduce((s,r)=>s+r.ni,0);
-  const ap = at > 0 ? tp/at : 0;
+  const tp   = rows.reduce((s,r)=>s+r.prog,0);
+  const tni  = rows.reduce((s,r)=>s+r.ni,0);
+  const ap   = at > 0 ? tp/at : 0;
   const metC = rows.filter(r=>r.met).length;
 
-  el('bhPct').innerHTML = (ap*100).toFixed(1)+'<span>%</span>';
-  el('bhBar').style.width = Math.min(ap*100,100).toFixed(1)+'%';
-  el('bhProgress').textContent = peso(tp);
-  el('bhTarget').textContent = peso(at);
-  const rem = at - tp;
-  el('bhRemaining').textContent = rem > 0 ? peso(rem) : '✅ Exceeded!';
-  el('bhMet').textContent = metC;
-  el('bhMiss').textContent = 12 - metC;
+  // Hero banner inside drill
+  const heroBanner = `
+    <div style="background:linear-gradient(135deg,#1e1b4b,#4c1d95,#5b21b6);border-radius:10px;padding:22px 26px;color:#fff;margin-bottom:18px;position:relative;overflow:hidden;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px;">Annual Commission Achievement — FY ${S.year}</div>
+      <div style="display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:14px;">
+        <div style="font-size:46px;font-weight:900;line-height:1;letter-spacing:-2px;">${(ap*100).toFixed(1)}<span style="font-size:22px;color:rgba(255,255,255,.6)">%</span></div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;padding-bottom:6px;">
+          <div><div style="font-size:14px;font-weight:700;">${peso(tp,true)}</div><div style="font-size:10px;color:rgba(255,255,255,.5)">Total Progress</div></div>
+          <div><div style="font-size:14px;font-weight:700;">${peso(at,true)}</div><div style="font-size:10px;color:rgba(255,255,255,.5)">Annual Target</div></div>
+          <div><div style="font-size:14px;font-weight:700;color:${ap>=1?'#86efac':'rgba(255,255,255,.8)'}">${ap>=1?'✅ Exceeded!':peso(at-tp,true)+' left'}</div><div style="font-size:10px;color:rgba(255,255,255,.5)">Remaining</div></div>
+          <div><div style="font-size:14px;font-weight:700;">${metC}/12</div><div style="font-size:10px;color:rgba(255,255,255,.5)">Months Met</div></div>
+        </div>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${Math.min(ap*100,100).toFixed(1)}%;background:linear-gradient(90deg,#a78bfa,#7c3aed);border-radius:4px;transition:width .8s ease;"></div>
+      </div>
+    </div>`;
 
-  const thead = `<thead><tr><th>MONTH</th><th class="num">TARGET</th><th class="num">PROGRESS</th><th class="num">VARIANCE</th><th>BATTERY LEVEL</th><th class="num">% ACHIEVED</th><th class="num">NET INCOME</th><th>STATUS</th></tr></thead>`;
+  const cfg_row = `
+    <div style="display:flex;align-items:center;gap:10px;background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:8px;padding:8px 14px;margin-bottom:14px;font-size:12px;color:#5b21b6;">
+      <label style="font-weight:600;">💡 Monthly Target (₱):</label>
+      <input type="number" id="bonusInput" value="50000" min="0" step="1000"
+        style="font-size:12px;font-weight:600;padding:4px 8px;border-radius:5px;border:1.5px solid #c4b5fd;width:120px;outline:none;color:#1e1b4b;"
+        oninput="if(S.activeDrill==='bonus'){openDrill('bonus');}" />
+      <span style="color:#7c3aed;font-size:11px;">← Adjust to recalculate instantly</span>
+    </div>`;
+
+  const thead = `<thead><tr>
+    <th>MONTH</th><th class="num">TARGET</th><th class="num">PROGRESS</th>
+    <th class="num">VARIANCE</th><th>BATTERY LEVEL</th>
+    <th class="num">% ACHIEVED</th><th class="num">NET INCOME</th><th>STATUS</th>
+  </tr></thead>`;
+
   const tbody = rows.map(r => {
+    const mt2 = 50000;
     const cap = Math.min(r.pa*100,100).toFixed(1);
     const bc  = r.pa>=1?'hi':r.pa>=.5?'med':'low';
     const batt = r.met
       ? `<div class="batt-wrap"><div class="batt-track" style="flex:1"><div class="batt-fill hi" style="width:100%"></div></div><span class="batt-met">🏆 MET</span></div>`
       : `<div class="batt-wrap"><div class="batt-track"><div class="batt-fill ${bc}" style="width:${cap}%"></div></div><span class="batt-lbl">${(r.pa*100).toFixed(1)}%</span></div>`;
     const niS = r.ni>=0?'<span class="spill profit">✅ Profit</span>':'<span class="spill loss">🔴 Loss</span>';
-    return `<tr><td style="font-weight:600">${r.m}</td><td class="num">${peso(r.target)}</td><td class="num" style="font-weight:600">${peso(r.prog)}</td><td class="num ${r.var>=0?'vp':'vn'}">${r.var>=0?'+':''}${peso(r.var)}</td><td>${batt}</td><td class="num" style="font-weight:700">${(r.pa*100).toFixed(1)}%</td><td class="num ${r.ni>=0?'vp':'vn'}">${peso(r.ni)}</td><td>${niS}</td></tr>`;
+    return `<tr>
+      <td style="font-weight:600">${r.m}</td>
+      <td class="num">${peso(mt2)}</td>
+      <td class="num" style="font-weight:600">${peso(r.prog)}</td>
+      <td class="num ${r.va>=0?'vp':'vn'}">${r.va>=0?'+':''}${peso(r.va)}</td>
+      <td>${batt}</td>
+      <td class="num" style="font-weight:700">${(r.pa*100).toFixed(1)}%</td>
+      <td class="num ${r.ni>=0?'vp':'vn'}">${peso(r.ni)}</td>
+      <td>${niS}</td>
+    </tr>`;
   }).join('');
+
   const aB = `<div class="batt-wrap"><div class="batt-track"><div class="batt-fill hi" style="width:${Math.min(ap*100,100).toFixed(1)}%"></div></div><span class="batt-lbl">${(ap*100).toFixed(1)}%</span></div>`;
-  el('bonusTable').innerHTML = thead+'<tbody>'+tbody+`<tr class="tot"><td>ANNUAL TOTAL</td><td class="num">${peso(at)}</td><td class="num">${peso(tp)}</td><td class="num">${ap>=1?'+':''}${peso(tp-at)}</td><td>${aB}</td><td class="num">${(ap*100).toFixed(1)}%</td><td class="num">${peso(tni)}</td><td style="font-size:11px;color:rgba(255,255,255,.7);font-family:var(--font)">${metC}/12 months met</td></tr>`+'</tbody>';
+  const totalRow = `<tr class="tot"><td>ANNUAL TOTAL</td><td class="num">${peso(at)}</td><td class="num">${peso(tp)}</td><td class="num ${ap>=1?'vp':'vn'}">${ap>=1?'+':''}${peso(tp-at)}</td><td>${aB}</td><td class="num">${(ap*100).toFixed(1)}%</td><td class="num">${peso(tni)}</td><td style="font-size:11px;color:rgba(255,255,255,.7);font-family:var(--font)">${metC}/12 months met</td></tr>`;
+
+  return heroBanner + cfg_row + `<div class="tbl-scroll"><table class="data-table">${thead}<tbody>${tbody}${totalRow}</tbody></table></div>`;
 }
+
+/* ═══ BONUS (legacy — no longer needed but kept for safety) ═══ */
+function renderBonus() {}
 
 /* CLOCK */
 setInterval(()=>{ el('clockEl').textContent=new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); },1000);
