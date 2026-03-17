@@ -1,1974 +1,772 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>NAM Trading — Financial Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
 <style>
-/* ── DESIGN TOKENS ─────────────────────────────────────────── */
-:root {
-  --blue-50:  #EFF6FF;
-  --blue-100: #DBEAFE;
-  --blue-200: #BFDBFE;
-  --blue-500: #3B82F6;
-  --blue-600: #2563EB;
-  --blue-700: #1D4ED8;
-  --blue-900: #1E3A8A;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue:#1d4ed8;--blue2:#3b82f6;--blue-bg:#eff6ff;--blue-bd:#bfdbfe;
+  --green:#15803d;--green2:#22c55e;--green-bg:#f0fdf4;--green-bd:#bbf7d0;
+  --orange:#c2410c;--orange2:#f97316;--orange-bg:#fff7ed;--orange-bd:#fed7aa;
+  --teal:#0e7490;--teal2:#22d3ee;--teal-bg:#ecfeff;--teal-bd:#a5f3fc;
+  --red:#b91c1c;--red2:#ef4444;--red-bg:#fef2f2;--red-bd:#fecaca;
+  --gray50:#f8fafc;--gray100:#f1f5f9;--gray200:#e2e8f0;
+  --gray300:#cbd5e1;--gray500:#64748b;--gray700:#334155;--gray900:#0f172a;
+  --white:#fff;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 15px rgba(0,0,0,.08),0 4px 6px rgba(0,0,0,.05);
+  --radius:12px;--radius-sm:8px;
+  --font:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font-size:14px;min-height:100vh;}
 
-  --green-50:  #F0FDF4;
-  --green-100: #DCFCE7;
-  --green-500: #22C55E;
-  --green-600: #16A34A;
-  --green-700: #15803D;
+/* ── NAV ── */
+.nav{
+  background:var(--white);border-bottom:1px solid var(--gray200);
+  padding:0 28px;display:flex;align-items:center;
+  justify-content:space-between;height:60px;
+  position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);
+}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-logo{width:34px;height:34px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;}
+.nav-title{font-size:15px;font-weight:700;color:var(--gray900);}
+.nav-sub{font-size:11px;color:var(--gray500);margin-top:1px;}
+.nav-tabs{display:flex;gap:2px;}
+.nav-tab{padding:7px 15px;border-radius:var(--radius-sm);font-size:12.5px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--gray500);font-family:var(--font);transition:all .15s;}
+.nav-tab:hover{background:var(--gray100);color:var(--gray700);}
+.nav-tab.active{background:var(--blue-bg);color:var(--blue);}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.nav-select{border:1.5px solid var(--gray200);border-radius:var(--radius-sm);padding:6px 10px;font-size:13px;font-weight:600;color:var(--gray700);background:var(--gray50);cursor:pointer;outline:none;font-family:var(--font);transition:border-color .15s;}
+.nav-select:hover{border-color:var(--blue2);}
+.nav-clock{background:var(--blue-bg);border:1.5px solid var(--blue-bd);color:var(--blue);font-size:12px;font-weight:700;padding:6px 12px;border-radius:var(--radius-sm);min-width:90px;text-align:center;font-variant-numeric:tabular-nums;}
+.nav-btn{background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);padding:7px 14px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .15s;display:flex;align-items:center;gap:5px;}
+.nav-btn:hover{background:var(--blue2);}
+.nav-btn:disabled{opacity:.5;cursor:default;}
 
-  --orange-50:  #FFF7ED;
-  --orange-100: #FFEDD5;
-  --orange-400: #FB923C;
-  --orange-500: #F97316;
-  --orange-600: #EA580C;
+/* ── WRAP ── */
+.wrap{max-width:1200px;margin:0 auto;padding:24px 28px;}
 
-  --red-500: #EF4444;
-  --red-100: #FEE2E2;
+/* ── STATUS ── */
+.status{display:flex;align-items:center;gap:7px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:20px;font-size:12.5px;font-weight:500;border:1.5px solid var(--gray200);background:var(--white);color:var(--gray500);}
+.status.loading{color:var(--orange);border-color:var(--orange-bd);background:var(--orange-bg);}
+.status.error{color:var(--red);border-color:var(--red-bd);background:var(--red-bg);}
+.status.ok{color:var(--green);border-color:var(--green-bd);background:var(--green-bg);}
+.spin{width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  --gray-50:  #F8FAFC;
-  --gray-100: #F1F5F9;
-  --gray-200: #E2E8F0;
-  --gray-300: #CBD5E1;
-  --gray-400: #94A3B8;
-  --gray-500: #64748B;
-  --gray-700: #334155;
-  --gray-900: #0F172A;
+/* ── PERIOD HEADER ── */
+.period-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.period-title{font-size:22px;font-weight:800;color:var(--gray900);}
+.period-sub{font-size:13px;color:var(--gray500);margin-top:3px;}
+.period-badge{background:var(--blue-bg);border:1.5px solid var(--blue-bd);color:var(--blue);font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;}
 
-  --white: #FFFFFF;
-  --sidebar-w: 240px;
-  --header-h: 64px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --shadow-sm: 0 1px 3px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.04);
-  --shadow-md: 0 4px 12px rgba(15,23,42,.08), 0 2px 6px rgba(15,23,42,.05);
-  --shadow-lg: 0 10px 30px rgba(15,23,42,.10), 0 4px 12px rgba(15,23,42,.06);
-  --transition: .18s cubic-bezier(.4,0,.2,1);
-}
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px;}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:500px){.kpi-grid{grid-template-columns:1fr;}}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 14px; }
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--gray-50);
-  color: var(--gray-900);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+/* ── KPI CARD ── */
+.kpi{background:var(--white);border:2px solid var(--gray200);border-radius:var(--radius);padding:20px;cursor:pointer;position:relative;overflow:hidden;transition:all .2s ease;user-select:none;}
+.kpi:hover{border-color:var(--blue2);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.kpi.active{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.12),var(--shadow-md);}
+.kpi.active.kpi-green {border-color:var(--green); box-shadow:0 0 0 3px rgba(21,128,61,.1),var(--shadow-md);}
+.kpi.active.kpi-orange{border-color:var(--orange);box-shadow:0 0 0 3px rgba(194,65,12,.1),var(--shadow-md);}
+.kpi.active.kpi-teal  {border-color:var(--teal);  box-shadow:0 0 0 3px rgba(14,116,144,.1),var(--shadow-md);}
+.kpi.active.kpi-red   {border-color:var(--red);   box-shadow:0 0 0 3px rgba(185,28,28,.1),var(--shadow-md);}
 
-/* ── SIDEBAR ─────────────────────────────────────────────── */
-.sidebar {
-  position: fixed; left: 0; top: 0;
-  width: var(--sidebar-w); height: 100vh;
-  background: var(--blue-900);
-  display: flex; flex-direction: column;
-  z-index: 100;
-  transition: transform var(--transition);
-  box-shadow: 4px 0 20px rgba(15,23,42,.15);
-}
-.sidebar-logo {
-  padding: 24px 20px 20px;
-  border-bottom: 1px solid rgba(255,255,255,.1);
-}
-.logo-mark { display: flex; align-items: center; gap: 10px; }
-.logo-icon {
-  width: 36px; height: 36px;
-  background: linear-gradient(135deg, var(--blue-500), var(--green-500));
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 700; color: white;
-  flex-shrink: 0;
-}
-.logo-text { color: white; }
-.logo-name { font-size: 13px; font-weight: 700; letter-spacing: .5px; }
-.logo-sub  { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .3px; margin-top: 1px; }
+.kpi-dot{width:8px;height:8px;border-radius:50%;margin-bottom:14px;}
+.kpi-blue   .kpi-dot{background:var(--blue);}
+.kpi-green  .kpi-dot{background:var(--green2);}
+.kpi-orange .kpi-dot{background:var(--orange2);}
+.kpi-teal   .kpi-dot{background:var(--teal2);}
+.kpi-red    .kpi-dot{background:var(--red2);}
 
-.sidebar-section { padding: 16px 12px 4px; }
-.sidebar-label {
-  font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase;
-  color: rgba(255,255,255,.35); padding: 0 8px;
-}
-.nav-link {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px; border-radius: var(--radius-sm);
-  color: rgba(255,255,255,.65); font-size: 13px; font-weight: 500;
-  cursor: pointer; transition: var(--transition);
-  margin: 2px 0; text-decoration: none; border: none; background: none;
-  width: 100%;
-}
-.nav-link:hover  { background: rgba(255,255,255,.08); color: white; }
-.nav-link.active { background: rgba(59,130,246,.35); color: white; }
-.nav-icon { width: 16px; text-align: center; flex-shrink: 0; font-style: normal; }
-.sidebar-divider { height: 1px; background: rgba(255,255,255,.08); margin: 12px 12px; }
+.kpi-icon{position:absolute;top:18px;right:18px;font-size:20px;opacity:.5;}
+.kpi-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--gray500);margin-bottom:8px;}
+.kpi-value{font-size:26px;font-weight:800;color:var(--gray900);line-height:1;letter-spacing:-1px;margin-bottom:6px;}
+.kpi-meta{font-size:11.5px;color:var(--gray500);}
+.kpi-change{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;margin-top:10px;}
+.ch-up  {background:var(--green-bg);color:var(--green);}
+.ch-down{background:var(--red-bg);  color:var(--red);}
+.ch-flat{background:var(--blue-bg); color:var(--blue);}
+.ch-ora {background:var(--orange-bg);color:var(--orange);}
+.kpi-arrow{position:absolute;bottom:16px;right:16px;width:24px;height:24px;border-radius:50%;background:var(--gray100);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gray500);transition:all .2s;}
+.kpi:hover .kpi-arrow,.kpi.active .kpi-arrow{background:var(--blue);color:#fff;}
+.kpi.active.kpi-green  .kpi-arrow{background:var(--green);}
+.kpi.active.kpi-orange .kpi-arrow{background:var(--orange);}
+.kpi.active.kpi-teal   .kpi-arrow{background:var(--teal);}
+.kpi.active.kpi-red    .kpi-arrow{background:var(--red);}
+.kpi-bar{margin-top:10px;}
+.kpi-bar-track{height:3px;background:var(--gray200);border-radius:99px;overflow:hidden;}
+.kpi-bar-fill{height:100%;border-radius:99px;transition:width .8s ease;}
+.kpi-blue  .kpi-bar-fill{background:var(--blue);}
+.kpi-green .kpi-bar-fill{background:var(--green2);}
+.kpi-orange .kpi-bar-fill{background:var(--orange2);}
+.kpi-teal  .kpi-bar-fill{background:var(--teal2);}
+.kpi-red   .kpi-bar-fill{background:var(--red2);}
 
-.year-picker { padding: 12px; }
-.year-picker-label {
-  font-size: 10px; font-weight: 600; letter-spacing: 1.1px; text-transform: uppercase;
-  color: rgba(255,255,255,.35); display: block; margin-bottom: 8px; padding: 0 4px;
-}
-.year-btns { display: flex; gap: 4px; flex-wrap: wrap; }
-.year-btn {
-  flex: 1; padding: 6px 0; text-align: center; font-size: 12px; font-weight: 600;
-  background: rgba(255,255,255,.07); color: rgba(255,255,255,.6);
-  border: 1px solid rgba(255,255,255,.1); border-radius: var(--radius-sm);
-  cursor: pointer; transition: var(--transition); font-family: 'DM Mono', monospace;
-}
-.year-btn:hover  { background: rgba(255,255,255,.12); color: white; }
-.year-btn.active { background: var(--blue-600); color: white; border-color: var(--blue-500); }
+/* ── DRILL PANEL ── */
+.drill-panel{background:var(--white);border:2px solid var(--blue);border-radius:var(--radius);overflow:hidden;margin-top:12px;margin-bottom:20px;box-shadow:var(--shadow-lg);animation:slideDown .25s ease;}
+.drill-panel.dp-green {border-color:var(--green);}
+.drill-panel.dp-orange{border-color:var(--orange);}
+.drill-panel.dp-teal  {border-color:var(--teal);}
+.drill-panel.dp-red   {border-color:var(--red);}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.drill-header{padding:16px 22px;background:var(--blue-bg);border-bottom:1px solid var(--blue-bd);display:flex;align-items:center;justify-content:space-between;}
+.dp-green  .drill-header{background:var(--green-bg); border-bottom-color:var(--green-bd);}
+.dp-orange .drill-header{background:var(--orange-bg);border-bottom-color:var(--orange-bd);}
+.dp-teal   .drill-header{background:var(--teal-bg);  border-bottom-color:var(--teal-bd);}
+.dp-red    .drill-header{background:var(--red-bg);   border-bottom-color:var(--red-bd);}
+.drill-header-left h3{font-size:14px;font-weight:700;color:var(--gray900);}
+.drill-header-left p{font-size:11.5px;color:var(--gray500);margin-top:2px;}
+.drill-close{width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;background:rgba(0,0,0,.08);color:var(--gray700);display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .15s;font-family:var(--font);}
+.drill-close:hover{background:rgba(0,0,0,.15);}
+.drill-body{padding:22px;}
+.drill-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
+.dstat{background:var(--gray50);border:1px solid var(--gray200);border-radius:var(--radius-sm);padding:14px 16px;}
+.dstat-val{font-size:20px;font-weight:800;color:var(--gray900);letter-spacing:-.5px;}
+.dstat-lbl{font-size:10px;color:var(--gray500);margin-top:3px;text-transform:uppercase;letter-spacing:.07em;font-weight:600;}
+.drill-tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.dtab{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray200);background:var(--white);color:var(--gray500);transition:all .15s;font-family:var(--font);}
+.dtab:hover{border-color:var(--gray300);color:var(--gray700);}
+.dtab.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+.dp-green  .dtab.active{background:var(--green); border-color:var(--green);}
+.dp-orange .dtab.active{background:var(--orange);border-color:var(--orange);}
+.dp-teal   .dtab.active{background:var(--teal);  border-color:var(--teal);}
+.dp-red    .dtab.active{background:var(--red);   border-color:var(--red);}
+.drill-chart{position:relative;height:280px;}
 
-.sidebar-footer {
-  margin-top: auto; padding: 12px;
-  border-top: 1px solid rgba(255,255,255,.08);
-}
-.refresh-info {
-  font-size: 10px; color: rgba(255,255,255,.35);
-  display: flex; align-items: center; gap: 6px; padding: 4px 8px;
-}
-.pulse-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green-500); flex-shrink: 0;
-  animation: pulse 2s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: .4; transform: scale(.8); }
-}
+/* ── BOTTOM ROW ── */
+.bottom-row{display:grid;grid-template-columns:1fr 320px;gap:12px;margin-top:12px;}
+@media(max-width:900px){.bottom-row{grid-template-columns:1fr;}}
+.card{background:var(--white);border:1.5px solid var(--gray200);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm);}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;}
+.card-head-l h3{font-size:13.5px;font-weight:700;color:var(--gray900);}
+.card-head-l p{font-size:11px;color:var(--gray500);margin-top:2px;}
+.card-badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--blue-bg);color:var(--blue);}
+.card-badge.g{background:var(--green-bg);color:var(--green);}
+.chart-area{position:relative;height:220px;}
+.donut-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:220px;}
+.donut-center{position:absolute;text-align:center;pointer-events:none;}
+.donut-pct{font-size:26px;font-weight:900;color:var(--gray900);}
+.donut-sub{font-size:10px;color:var(--gray500);margin-top:2px;}
+.donut-legend{margin-top:14px;width:100%;}
+.dl-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--gray100);}
+.dl-row:last-child{border-bottom:none;}
+.dl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:6px;}
+.dl-name{flex:1;font-size:11.5px;color:var(--gray700);}
+.dl-val{font-size:12px;font-weight:700;color:var(--gray900);}
 
-/* ── MAIN LAYOUT ─────────────────────────────────────────── */
-.main { margin-left: var(--sidebar-w); display: flex; flex-direction: column; min-height: 100vh; }
+/* ── VIEWS ── */
+.view{display:none;}
+.view.active{display:block;}
 
-/* ── TOP HEADER ──────────────────────────────────────────── */
-.topbar {
-  height: var(--header-h);
-  background: var(--white);
-  border-bottom: 1px solid var(--gray-200);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px;
-  position: sticky; top: 0; z-index: 50;
-  box-shadow: var(--shadow-sm);
-}
-.topbar-left { display: flex; flex-direction: column; gap: 1px; }
-.topbar-title { font-size: 17px; font-weight: 700; color: var(--gray-900); line-height: 1; }
-.topbar-subtitle { font-size: 11px; color: var(--gray-400); }
-.topbar-right { display: flex; align-items: center; gap: 12px; }
+/* ── TABLE ── */
+.data-table{width:100%;border-collapse:collapse;font-size:12px;}
+.data-table thead th{padding:9px 12px;background:var(--gray50);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--gray500);font-weight:700;text-align:left;border-bottom:1.5px solid var(--gray200);white-space:nowrap;}
+.data-table thead th.num{text-align:right;}
+.data-table tbody td{padding:10px 12px;border-bottom:1px solid var(--gray200);color:var(--gray700);white-space:nowrap;}
+.data-table tbody td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.data-table tbody tr:hover td{background:var(--blue-bg);}
+.data-table tr.tot td{background:var(--gray900)!important;color:#fff;font-weight:700;border-top:2px solid var(--gray700);}
+.vp{color:var(--green);font-weight:700;}
+.vn{color:var(--red);font-weight:700;}
+.amt-neg{color:var(--orange)!important;}
 
-.month-select {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 500;
-  padding: 7px 12px; border-radius: var(--radius-sm);
-  border: 1.5px solid var(--gray-200);
-  background: var(--gray-50); color: var(--gray-700);
-  cursor: pointer; outline: none; transition: var(--transition);
-}
-.month-select:focus { border-color: var(--blue-500); background: var(--white); }
+.tbl-wrap{background:var(--white);border:1.5px solid var(--gray200);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:20px;}
+.tbl-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--gray200);}
+.tbl-head h3{font-size:13px;font-weight:700;color:var(--gray900);}
+.tbl-scroll{overflow-x:auto;}
 
-.refresh-btn {
-  display: flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: var(--radius-sm);
-  background: var(--blue-600); color: white;
-  border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
-  font-size: 12px; font-weight: 600; transition: var(--transition);
-}
-.refresh-btn:hover { background: var(--blue-700); }
-.refresh-btn.loading { opacity: .7; pointer-events: none; }
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:800px){.chart-grid{grid-template-columns:1fr;}}
 
-.last-updated {
-  font-size: 11px; color: var(--gray-400);
-  font-family: 'DM Mono', monospace;
-  background: var(--gray-100); padding: 4px 8px; border-radius: 4px;
-}
+.mini-bars{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;padding:4px 0;}
+.mb{display:flex;flex-direction:column;gap:4px;}
+.mb-top{display:flex;justify-content:space-between;align-items:center;}
+.mb-name{font-size:11.5px;font-weight:500;color:var(--gray700);display:flex;align-items:center;gap:5px;}
+.mb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.mb-val{font-size:11px;font-weight:700;color:var(--gray900);}
+.mb-track{height:5px;background:var(--gray100);border-radius:3px;overflow:hidden;}
+.mb-fill{height:100%;border-radius:3px;transition:width .7s ease;}
 
-/* ── CONTENT AREA ────────────────────────────────────────── */
-.content { padding: 24px 28px; flex: 1; }
-
-/* ── LOADING / ERROR ─────────────────────────────────────── */
-.overlay {
-  display: flex; align-items: center; justify-content: center;
-  flex: 1; padding: 60px 28px;
-}
-.spinner {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 3px solid var(--gray-200);
-  border-top-color: var(--blue-500);
-  animation: spin .7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.error-box {
-  background: var(--red-100); border: 1.5px solid var(--red-500);
-  border-radius: var(--radius-md); padding: 20px 24px;
-  max-width: 480px; text-align: center;
-}
-.error-box h3 { color: var(--red-500); margin-bottom: 8px; }
-.error-box p  { color: var(--gray-700); font-size: 13px; line-height: 1.6; }
-.error-box code { font-family: 'DM Mono', monospace; font-size: 12px; word-break: break-all; }
-
-/* ── SECTION HEADER ──────────────────────────────────────── */
-.section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
-}
-.section-title {
-  font-size: 13px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .8px;
-  color: var(--gray-500);
-}
-.section-badge {
-  font-size: 11px; font-weight: 600; padding: 2px 8px;
-  border-radius: 20px; font-family: 'DM Mono', monospace;
-}
-
-/* ── KPI CARDS ───────────────────────────────────────────── */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 28px;
-}
-.kpi-card {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-  border: 1.5px solid var(--gray-100);
-  position: relative; overflow: hidden;
-  transition: box-shadow var(--transition), transform var(--transition);
-}
-.kpi-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-.kpi-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-}
-.kpi-card.blue::before   { background: linear-gradient(90deg, var(--blue-500), var(--blue-400)); }
-.kpi-card.green::before  { background: linear-gradient(90deg, var(--green-600), var(--green-400)); }
-.kpi-card.orange::before { background: linear-gradient(90deg, var(--orange-500), var(--orange-400)); }
-.kpi-card.teal::before   { background: linear-gradient(90deg, #0EA5E9, #38BDF8); }
-.kpi-card.red::before    { background: linear-gradient(90deg, var(--red-500), #F87171); }
-
-.kpi-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.kpi-label  { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .6px; }
-.kpi-icon {
-  width: 32px; height: 32px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center; font-size: 15px;
-}
-.kpi-card.blue   .kpi-icon { background: var(--blue-50);   }
-.kpi-card.green  .kpi-icon { background: var(--green-50);  }
-.kpi-card.orange .kpi-icon { background: var(--orange-50); }
-.kpi-card.teal   .kpi-icon { background: #F0F9FF; }
-.kpi-card.red    .kpi-icon { background: var(--red-100); }
-
-.kpi-value {
-  font-size: 24px; font-weight: 700; line-height: 1;
-  color: var(--gray-900); margin-bottom: 6px;
-  font-family: 'DM Mono', monospace; letter-spacing: -1px;
-}
-.kpi-sub { font-size: 11px; color: var(--gray-400); }
-.kpi-badge {
-  display: inline-flex; align-items: center; gap: 3px;
-  font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
-  margin-top: 4px;
-}
-.kpi-badge.pos { background: var(--green-100); color: var(--green-700); }
-.kpi-badge.neg { background: var(--red-100);   color: var(--red-500);   }
-
-/* ── INLINE BREAKDOWN (inside KPI cards) ────────────────── */
-.kpi-breakdown {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--gray-100);
-}
-.kpi-breakdown-title {
-  font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-  color: var(--gray-400); margin-bottom: 7px;
-}
-.kpi-breakdown-row {
-  display: flex; align-items: center; gap: 6px;
-  margin-bottom: 5px;
-}
-.kpi-bd-dot {
-  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-}
-.kpi-bd-label {
-  flex: 1; font-size: 10px; color: var(--gray-600);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.kpi-bd-pct {
-  font-size: 10px; font-weight: 700;
-  font-family: 'DM Mono', monospace;
-  color: var(--gray-700);
-}
-.kpi-bd-bar-wrap {
-  width: 100%; height: 3px; background: var(--gray-100);
-  border-radius: 2px; margin-top: -2px; margin-bottom: 4px;
-}
-.kpi-bd-bar-fill { height: 100%; border-radius: 2px; transition: width .5s ease; }
-
-/* ── CHARTS GRID ─────────────────────────────────────────── */
-.charts-row {
-  display: grid;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-.charts-row.two-one { grid-template-columns: 2fr 1fr; }
-.charts-row.three   { grid-template-columns: 1fr 1fr 1fr; }
-.charts-row.two     { grid-template-columns: 1fr 1fr; }
-
-.chart-card {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-  border: 1.5px solid var(--gray-100);
-}
-.chart-card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 16px; padding-bottom: 12px;
-  border-bottom: 1px solid var(--gray-100);
-}
-.chart-title { font-size: 13px; font-weight: 700; color: var(--gray-900); }
-.chart-desc  { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
-.chart-wrap  { position: relative; }
-
-/* ── RANKED BREAKDOWN LIST ───────────────────────────────── */
-.breakdown-list { margin-top: 12px; }
-.breakdown-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--gray-100);
-}
-.breakdown-item:last-child { border-bottom: none; }
-.breakdown-rank {
-  width: 18px; height: 18px; border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 800;
-  flex-shrink: 0;
-}
-.breakdown-name {
-  flex: 1; font-size: 11px; font-weight: 500; color: var(--gray-700);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.breakdown-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.breakdown-val {
-  font-size: 11px; font-weight: 700;
-  font-family: 'DM Mono', monospace; color: var(--gray-900);
-}
-.breakdown-pct { font-size: 9px; color: var(--gray-400); }
-.breakdown-bar-wrap { width: 100%; height: 3px; background: var(--gray-100); border-radius: 2px; margin-top: 4px; }
-.breakdown-bar-fill { height: 100%; border-radius: 2px; transition: width .5s cubic-bezier(.4,0,.2,1); }
-
-/* split card: donut left, list right */
-.split-card { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
-.split-donut { display: flex; flex-direction: column; }
-.split-list  { display: flex; flex-direction: column; }
-
-/* ── MONTHLY TABLE ───────────────────────────────────────── */
-.table-card {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1.5px solid var(--gray-100);
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-.table-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--gray-100);
-}
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-thead tr { background: var(--gray-50); }
-th {
-  padding: 10px 14px; text-align: right;
-  font-size: 10px; font-weight: 700; letter-spacing: .7px;
-  text-transform: uppercase; color: var(--gray-500);
-  border-bottom: 1.5px solid var(--gray-200);
-  white-space: nowrap;
-}
-th:first-child { text-align: left; }
-td {
-  padding: 9px 14px; text-align: right;
-  color: var(--gray-700); border-bottom: 1px solid var(--gray-100);
-  font-family: 'DM Mono', monospace; font-size: 11.5px;
-  white-space: nowrap;
-}
-td:first-child {
-  text-align: left; font-family: 'DM Sans', monospace;
-  font-size: 12px; font-weight: 500; color: var(--gray-700);
-}
-tr.row-total td {
-  font-weight: 700; background: var(--gray-50);
-  border-top: 2px solid var(--gray-200);
-  border-bottom: 2px solid var(--gray-200);
-  color: var(--gray-900);
-}
-tr.row-header td, tr.row-header th {
-  background: var(--blue-50); color: var(--blue-700);
-  font-weight: 700; font-size: 10px; letter-spacing: .5px;
-}
-tr:hover td { background: var(--gray-50); }
-.amt-neg { color: var(--orange-600) !important; }
-.amt-pos { color: var(--green-700) !important; }
-
-/* ── MINI BARS (compensation card) ──────────────────────── */
-.mini-bars { display: flex; flex-direction: column; gap: 10px; }
-.mini-bar-row { display: flex; flex-direction: column; gap: 4px; }
-.mini-bar-label { display: flex; justify-content: space-between; align-items: center; }
-.mini-bar-name { font-size: 12px; font-weight: 500; color: var(--gray-700); }
-.mini-bar-val  { font-size: 11px; font-weight: 600; color: var(--gray-900); font-family: 'DM Mono', monospace; }
-.mini-bar-track { height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
-.mini-bar-fill  { height: 100%; border-radius: 3px; transition: width .6s cubic-bezier(.4,0,.2,1); }
-
-/* ── MONTHLY KPI PANEL ───────────────────────────────────── */
-.monthly-kpis {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 10px; margin-bottom: 10px;
-}
-.m-kpi { text-align: center; padding: 12px; background: var(--gray-50); border-radius: var(--radius-sm); }
-.m-kpi-val { font-size: 15px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--gray-900); }
-.m-kpi-lbl { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
-
-/* ── PERIOD PILL ─────────────────────────────────────────── */
-.period-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 10px; font-weight: 600; padding: 3px 8px;
-  border-radius: 20px; background: var(--blue-50); color: var(--blue-700);
-  font-family: 'DM Mono', monospace;
-}
-
-/* ── RESPONSIVE ──────────────────────────────────────────── */
-@media (max-width: 1100px) { .split-card { grid-template-columns: 1fr; } }
-@media (max-width: 900px) {
-  .charts-row.two-one { grid-template-columns: 1fr; }
-  .charts-row.three   { grid-template-columns: 1fr 1fr; }
-  .monthly-kpis { grid-template-columns: repeat(2, 1fr); }
-  .charts-row.two { grid-template-columns: 1fr; }
-}
-@media (max-width: 640px) {
-  :root { --sidebar-w: 0px; }
-  .sidebar { transform: translateX(-240px); }
-  .main { margin-left: 0; }
-  .content { padding: 16px; }
-  .kpi-grid { grid-template-columns: 1fr 1fr; }
-}
-
-.hidden { display: none !important; }
-.text-right { text-align: right; }
-.fw-700 { font-weight: 700; }
-.mt-6 { margin-top: 6px; }
-
-/* ── BONUS MONITORING ────────────────────────────────────── */
-.bonus-hero {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 16px;
-  margin-bottom: 20px;
-  align-items: stretch;
-}
-.bonus-hero-main {
-  background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 60%, #2563EB 100%);
-  border-radius: var(--radius-lg);
-  padding: 28px 32px;
-  color: white;
-  position: relative; overflow: hidden;
-  box-shadow: var(--shadow-lg);
-}
-.bonus-hero-main::before {
-  content: ''; position: absolute;
-  top: -40px; right: -40px;
-  width: 200px; height: 200px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.05);
-}
-.bonus-hero-main::after {
-  content: ''; position: absolute;
-  bottom: -60px; right: 60px;
-  width: 150px; height: 150px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.04);
-}
-.bonus-hero-label {
-  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
-  text-transform: uppercase; color: rgba(255,255,255,.6);
-  margin-bottom: 6px;
-}
-.bonus-hero-title {
-  font-size: 26px; font-weight: 800; color: white; line-height: 1;
-  margin-bottom: 20px; letter-spacing: -.5px;
-}
-.bonus-hero-pct {
-  font-size: 52px; font-weight: 900; line-height: 1;
-  font-family: 'DM Mono', monospace;
-  color: white; letter-spacing: -2px; margin-bottom: 12px;
-}
-.bonus-hero-pct span { font-size: 28px; font-weight: 700; color: rgba(255,255,255,.7); }
-.bonus-hero-bar-wrap {
-  height: 10px; background: rgba(255,255,255,.15);
-  border-radius: 5px; overflow: hidden; margin-bottom: 16px;
-}
-.bonus-hero-bar-fill {
-  height: 100%; border-radius: 5px;
-  background: linear-gradient(90deg, #22C55E, #86EFAC);
-  transition: width .8s cubic-bezier(.4,0,.2,1);
-}
-.bonus-hero-stats {
-  display: flex; gap: 24px; flex-wrap: wrap;
-}
-.bonus-hero-stat { display: flex; flex-direction: column; gap: 2px; }
-.bonus-hero-stat-val {
-  font-size: 15px; font-weight: 700;
-  font-family: 'DM Mono', monospace; color: white;
-}
-.bonus-hero-stat-lbl { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: .3px; }
-
-.bonus-hero-side {
-  display: flex; flex-direction: column; gap: 10px; min-width: 175px;
-}
-.bonus-stat-card {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  box-shadow: var(--shadow-sm);
-  border: 1.5px solid var(--gray-100);
-  flex: 1; display: flex; flex-direction: column; justify-content: center;
-}
-.bonus-stat-card-label {
-  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
-  color: var(--gray-400); margin-bottom: 4px;
-}
-.bonus-stat-card-val {
-  font-size: 17px; font-weight: 700;
-  font-family: 'DM Mono', monospace; color: var(--gray-900); line-height: 1;
-}
-.bonus-stat-card.green  .bonus-stat-card-val { color: var(--green-600); }
-.bonus-stat-card.orange .bonus-stat-card-val { color: var(--orange-600); }
-.bonus-stat-card-sub { font-size: 10px; color: var(--gray-400); margin-top: 3px; }
-
-/* Target input row */
-.bonus-config-row {
-  display: flex; align-items: center; gap: 12px;
-  background: var(--blue-50); border: 1.5px solid var(--blue-100);
-  border-radius: var(--radius-sm); padding: 10px 16px;
-  margin-bottom: 16px; font-size: 12px; color: var(--blue-700);
-}
-.bonus-config-row label { font-weight: 600; }
-.bonus-target-input {
-  font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600;
-  padding: 5px 10px; border-radius: 5px;
-  border: 1.5px solid var(--blue-200); background: white;
-  color: var(--blue-900); width: 120px; outline: none;
-}
-.bonus-target-input:focus { border-color: var(--blue-500); }
-
-/* Bonus table */
-.bonus-table-card {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1.5px solid var(--gray-100);
-  overflow: hidden;
-}
-.bonus-table-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px;
-  background: var(--gray-50);
-  border-bottom: 2px solid var(--gray-200);
-}
-table.bonus-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
-table.bonus-tbl th {
-  padding: 9px 12px; text-align: left;
-  font-size: 10px; font-weight: 700; letter-spacing: .7px;
-  text-transform: uppercase; color: var(--gray-500);
-  background: var(--gray-50);
-  border-bottom: 1.5px solid var(--gray-200);
-  white-space: nowrap;
-}
-table.bonus-tbl th.num { text-align: right; }
-table.bonus-tbl td {
-  padding: 10px 12px; text-align: left;
-  color: var(--gray-700); border-bottom: 1px solid var(--gray-100);
-  font-size: 12px; white-space: nowrap; vertical-align: middle;
-}
-table.bonus-tbl td.num {
-  text-align: right; font-family: 'DM Mono', monospace; font-size: 11.5px;
-}
-table.bonus-tbl tr:hover td { background: var(--blue-50); }
-table.bonus-tbl tr.bonus-total td {
-  background: var(--blue-900); color: white; font-weight: 700;
-  border-top: 2px solid var(--blue-700);
-  font-family: 'DM Mono', monospace; font-size: 11.5px;
-}
-table.bonus-tbl tr.bonus-total td:first-child {
-  font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: .5px;
-}
-
-/* Battery bar inside table */
-.batt-wrap { display: flex; align-items: center; gap: 8px; min-width: 200px; }
-.batt-track {
-  flex: 1; height: 13px;
-  background: var(--gray-100); border-radius: 3px;
-  overflow: hidden; border: 1px solid var(--gray-200);
-}
-.batt-fill { height: 100%; border-radius: 2px; transition: width .5s ease; }
-.batt-fill.low  { background: linear-gradient(90deg,#EF4444,#FCA5A5); }
-.batt-fill.med  { background: linear-gradient(90deg,#F59E0B,#FCD34D); }
-.batt-fill.high { background: linear-gradient(90deg,#16A34A,#4ADE80); }
-.batt-label { font-size: 10px; font-weight: 700; color: var(--gray-600); font-family:'DM Mono',monospace; white-space:nowrap; }
-.batt-met {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: var(--green-50); color: var(--green-700);
-  border: 1px solid var(--green-100);
-  padding: 2px 8px; border-radius: 20px;
-  font-size: 10px; font-weight: 700;
-}
-.status-pill {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 8px; border-radius: 20px;
-  font-size: 10px; font-weight: 600; white-space: nowrap;
-}
-.status-pill.met    { background: var(--green-50);  color: var(--green-700); }
-.status-pill.notmet { background: var(--red-100);   color: var(--red-500);  }
-.status-pill.profit { background: var(--green-50);  color: var(--green-700); }
-.status-pill.loss   { background: var(--orange-50); color: var(--orange-600); }
-
-@media (max-width: 900px) {
-  .bonus-hero { grid-template-columns: 1fr; }
-  .bonus-hero-side { flex-direction: row; min-width: unset; }
-}
+/* ── BONUS ── */
+.bonus-hero{background:linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 60%,#2563eb 100%);border-radius:var(--radius);padding:28px 32px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg);}
+.bonus-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);}
+.bh-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:6px;}
+.bh-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:18px;}
+.bh-pct{font-size:52px;font-weight:900;line-height:1;color:#fff;letter-spacing:-2px;margin-bottom:10px;}
+.bh-pct span{font-size:26px;font-weight:700;color:rgba(255,255,255,.6);}
+.bh-bar-wrap{height:10px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden;margin-bottom:16px;}
+.bh-bar-fill{height:100%;background:linear-gradient(90deg,#22c55e,#86efac);border-radius:5px;transition:width .8s ease;}
+.bh-stats{display:flex;gap:24px;flex-wrap:wrap;}
+.bh-stat-val{font-size:15px;font-weight:700;color:#fff;}
+.bh-stat-lbl{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;}
+.bonus-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.bcard{background:var(--white);border:1.5px solid var(--gray200);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow-sm);}
+.bcard-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--gray500);margin-bottom:5px;}
+.bcard-val{font-size:19px;font-weight:800;color:var(--gray900);line-height:1;}
+.bcard-sub{font-size:10.5px;color:var(--gray500);margin-top:3px;}
+.bcard.g .bcard-val{color:var(--green);}
+.bcard.o .bcard-val{color:var(--orange);}
+.bonus-cfg{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--blue-bg);border:1.5px solid var(--blue-bd);border-radius:var(--radius-sm);padding:10px 16px;margin-bottom:14px;font-size:12px;color:var(--blue);}
+.bonus-cfg label{font-weight:600;}
+.bonus-cfg input{font-size:12px;font-weight:600;padding:5px 10px;border-radius:5px;border:1.5px solid var(--blue-bd);background:#fff;color:var(--gray900);width:130px;outline:none;font-family:var(--font);}
+.bonus-cfg input:focus{border-color:var(--blue2);}
+.batt-wrap{display:flex;align-items:center;gap:8px;min-width:180px;}
+.batt-track{flex:1;height:13px;background:var(--gray100);border-radius:3px;overflow:hidden;border:1px solid var(--gray200);}
+.batt-fill{height:100%;border-radius:2px;transition:width .5s;}
+.batt-fill.low{background:linear-gradient(90deg,#ef4444,#fca5a5);}
+.batt-fill.med{background:linear-gradient(90deg,#f59e0b,#fcd34d);}
+.batt-fill.hi {background:linear-gradient(90deg,#16a34a,#4ade80);}
+.batt-lbl{font-size:10px;font-weight:700;color:var(--gray500);white-space:nowrap;}
+.batt-met{display:inline-flex;align-items:center;gap:3px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;}
+.spill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;}
+.spill.profit{background:var(--green-bg);color:var(--green);}
+.spill.loss  {background:var(--orange-bg);color:var(--orange);}
 </style>
 </head>
 <body>
 
-<!-- ── SIDEBAR ──────────────────────────────────────────────── -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-mark">
-      <div class="logo-icon">N</div>
-      <div class="logo-text">
-        <div class="logo-name">NAM TRADING</div>
-        <div class="logo-sub">Financial Dashboard</div>
+<!-- ════ NAV ════ -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">N</div>
+    <div>
+      <div class="nav-title">NAM Trading Dashboard</div>
+      <div class="nav-sub">Statement of Comprehensive Income</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="setView('overview')" id="tab-overview">📊 Overview</button>
+    <button class="nav-tab" onclick="setView('income')"  id="tab-income" >📄 Income</button>
+    <button class="nav-tab" onclick="setView('costs')"   id="tab-costs"  >🔍 Costs</button>
+    <button class="nav-tab" onclick="setView('opex')"    id="tab-opex"   >💼 OpEx</button>
+    <button class="nav-tab" onclick="setView('bonus')"   id="tab-bonus"  >🎯 Bonus</button>
+  </div>
+  <div class="nav-right">
+    <select class="nav-select" id="selYear" onchange="onYearChange()"></select>
+    <select class="nav-select" id="selMonth" onchange="onMonthChange()">
+      <option value="all">All Months (YTD)</option>
+      <option value="Jan">January</option><option value="Feb">February</option>
+      <option value="Mar">March</option><option value="Apr">April</option>
+      <option value="May">May</option><option value="Jun">June</option>
+      <option value="Jul">July</option><option value="Aug">August</option>
+      <option value="Sep">September</option><option value="Oct">October</option>
+      <option value="Nov">November</option><option value="Dec">December</option>
+    </select>
+    <div class="nav-clock" id="clockEl">--:--:--</div>
+    <button class="nav-btn" id="btnRefresh" onclick="fetchData(true)">↻ Refresh</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="status loading" id="statusEl">
+    <span class="spin"></span>&nbsp; Connecting to Google Sheets…
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="view active" id="view-overview">
+    <div class="period-head" id="periodHead" style="display:none">
+      <div>
+        <div class="period-title" id="periodTitle">NAM Wholesale Trading</div>
+        <div class="period-sub">Click any card below to drill down</div>
+      </div>
+      <div class="period-badge" id="periodBadge">YTD</div>
+    </div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+    <div id="drillPanel" style="display:none"></div>
+    <div class="bottom-row" id="bottomRow" style="display:none">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-l"><h3>12-Month Performance Trend</h3><p>Net Sales · Gross Profit · Net Income</p></div>
+          <span class="card-badge" id="trendBadge">FY 2025</span>
+        </div>
+        <div class="chart-area"><canvas id="chartTrend"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-l"><h3>Margin Overview</h3><p>Gross margin breakdown</p></div>
+          <span class="card-badge g" id="donutBadge">YTD</span>
+        </div>
+        <div class="donut-wrap">
+          <div style="position:relative;width:150px;height:150px;">
+            <canvas id="chartDonut" width="150" height="150"></canvas>
+            <div class="donut-center" style="top:50%;left:50%;transform:translate(-50%,-50%)">
+              <div class="donut-pct" id="donutPct">—</div>
+              <div class="donut-sub">gross margin</div>
+            </div>
+          </div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="sidebar-section">
-    <span class="sidebar-label">Views</span>
-    <button class="nav-link active" onclick="setView('overview')">
-      <i class="nav-icon">📊</i> Overview
-    </button>
-    <button class="nav-link" onclick="setView('income')">
-      <i class="nav-icon">📄</i> Income Statement
-    </button>
-    <button class="nav-link" onclick="setView('costs')">
-      <i class="nav-icon">🔍</i> Cost Analysis
-    </button>
-    <button class="nav-link" onclick="setView('opex')">
-      <i class="nav-icon">💼</i> OpEx Breakdown
-    </button>
-    <button class="nav-link" onclick="setView('bonus')">
-      <i class="nav-icon">🎯</i> Bonus Monitoring
-    </button>
-  </div>
-
-  <div class="sidebar-divider"></div>
-
-  <div class="sidebar-section">
-    <span class="sidebar-label">Fiscal Year</span>
-    <div class="year-picker">
-      <div class="year-btns">
-        <button class="year-btn active" onclick="setYear('2025')">2025</button>
-        <button class="year-btn" onclick="setYear('2026')">2026</button>
-        <button class="year-btn" onclick="setYear('2027')">2027</button>
-        <button class="year-btn" onclick="setYear('2028')">2028</button>
-        <button class="year-btn" onclick="setYear('2029')">2029</button>
-        <button class="year-btn" onclick="setYear('2030')">2030</button>
-      </div>
+  <!-- ── INCOME ── -->
+  <div class="view" id="view-income">
+    <div class="period-head" style="display:flex;margin-bottom:20px;">
+      <div><div class="period-title">Income Statement</div><div class="period-sub">Monthly breakdown — all line items</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><h3>Statement of Comprehensive Income — Monthly</h3></div>
+      <div class="tbl-scroll"><table class="data-table" id="isTable"></table></div>
     </div>
   </div>
 
-  <div class="sidebar-footer">
-    <div class="refresh-info">
-      <span class="pulse-dot"></span>
-      <span id="countdown-text">Refreshing in 30s</span>
+  <!-- ── COSTS ── -->
+  <div class="view" id="view-costs">
+    <div class="period-head" style="display:flex;margin-bottom:20px;">
+      <div><div class="period-title">Cost Analysis</div><div class="period-sub">Direct costs &amp; gross margin trend</div></div>
     </div>
-  </div>
-</aside>
-
-<!-- ── MAIN ──────────────────────────────────────────────────── -->
-<main class="main">
-
-  <header class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-title" id="topbar-title">NAM Wholesale Trading</div>
-      <div class="topbar-subtitle">Statement of Comprehensive Income</div>
+    <div class="chart-grid">
+      <div class="card"><div class="card-head"><div class="card-head-l"><h3>COGS Monthly Trend</h3><p>Direct costs vs gross profit</p></div></div><div class="chart-area"><canvas id="cogsTrend"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="card-head-l"><h3>Gross Margin % Trend</h3><p>Month-by-month margin %</p></div></div><div class="chart-area"><canvas id="cogsGP"></canvas></div></div>
     </div>
-    <div class="topbar-right">
-      <select class="month-select" id="month-select" onchange="onMonthChange()">
-        <option value="all">All Months (YTD)</option>
-        <option value="Jan">January</option>
-        <option value="Feb">February</option>
-        <option value="Mar">March</option>
-        <option value="Apr">April</option>
-        <option value="May">May</option>
-        <option value="Jun">June</option>
-        <option value="Jul">July</option>
-        <option value="Aug">August</option>
-        <option value="Sep">September</option>
-        <option value="Oct">October</option>
-        <option value="Nov">November</option>
-        <option value="Dec">December</option>
-      </select>
-      <span class="last-updated" id="last-updated">—</span>
-      <button class="refresh-btn" id="refresh-btn" onclick="fetchData(true)">↻ Refresh</button>
-    </div>
-  </header>
-
-  <!-- LOADING -->
-  <div class="overlay" id="loading-state">
-    <div style="text-align:center;">
-      <div class="spinner" style="margin: 0 auto 16px;"></div>
-      <div style="font-size:13px; color:var(--gray-500);">Connecting to Google Sheets…</div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><h3>Direct Costs — Monthly Detail</h3></div>
+      <div class="tbl-scroll"><table class="data-table" id="cogsTable"></table></div>
     </div>
   </div>
 
-  <!-- ERROR -->
-  <div class="overlay hidden" id="error-state">
-    <div class="error-box">
-      <h3>⚠️ Connection Error</h3>
-      <p id="error-msg">Could not connect to the Google Sheets API.</p>
-      <p style="margin-top:12px; font-size:12px; color:var(--gray-400);">
-        Make sure <code id="api-url-display"></code> is deployed as a Google Apps Script Web App.
-      </p>
+  <!-- ── OPEX ── -->
+  <div class="view" id="view-opex">
+    <div class="period-head" style="display:flex;margin-bottom:20px;">
+      <div><div class="period-title">OpEx Breakdown</div><div class="period-sub">Operating expenses &amp; compensation</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="card"><div class="card-head"><div class="card-head-l"><h3>OpEx Monthly Trend</h3><p>Operating expenses vs sales</p></div></div><div class="chart-area"><canvas id="opexTrend"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="card-head-l"><h3>Compensation Trend</h3><p>Payroll vs total OpEx</p></div></div><div class="chart-area"><canvas id="compTrend"></canvas></div></div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><h3>Compensation &amp; Benefits — Monthly</h3></div>
+      <div class="tbl-scroll"><table class="data-table" id="compTable"></table></div>
     </div>
   </div>
 
-  <!-- DASHBOARD CONTENT -->
-  <div class="content hidden" id="dashboard-content">
-
-    <!-- ── VIEW: OVERVIEW ───────────────────────────────── -->
-    <div id="view-overview">
-
-      <!-- KPI CARDS -->
-      <div class="section-header">
-        <span class="section-title">Key Performance Indicators</span>
-        <span class="section-badge" id="kpi-period-badge" style="background:var(--blue-50);color:var(--blue-700);">YTD Total</span>
-      </div>
-
-      <div class="kpi-grid">
-
-        <!-- Net Sales -->
-        <div class="kpi-card blue">
-          <div class="kpi-header">
-            <span class="kpi-label">Net Sales</span>
-            <div class="kpi-icon">💰</div>
-          </div>
-          <div class="kpi-value" id="kpi-sales">—</div>
-          <div class="kpi-sub" id="kpi-sales-sub">Year-to-date</div>
-        </div>
-
-        <!-- Gross Profit -->
-        <div class="kpi-card green">
-          <div class="kpi-header">
-            <span class="kpi-label">Gross Profit</span>
-            <div class="kpi-icon">📈</div>
-          </div>
-          <div class="kpi-value" id="kpi-gp">—</div>
-          <div class="kpi-badge" id="kpi-gm-badge">—</div>
-          <div class="kpi-sub">Gross Margin %</div>
-        </div>
-
-        <!-- Total OpEx — with breakdown -->
-        <div class="kpi-card orange">
-          <div class="kpi-header">
-            <span class="kpi-label">Total OpEx</span>
-            <div class="kpi-icon">🏷️</div>
-          </div>
-          <div class="kpi-value" id="kpi-opex">—</div>
-          <div class="kpi-sub">Operating Expenses</div>
-          <div class="kpi-breakdown" id="kpi-opex-breakdown">
-            <div class="kpi-breakdown-title">Where we spend</div>
-            <!-- filled dynamically -->
-          </div>
-        </div>
-
-        <!-- Net Income -->
-        <div class="kpi-card teal">
-          <div class="kpi-header">
-            <span class="kpi-label">Net Income</span>
-            <div class="kpi-icon">🏦</div>
-          </div>
-          <div class="kpi-value" id="kpi-ni">—</div>
-          <div class="kpi-badge" id="kpi-nm-badge">—</div>
-          <div class="kpi-sub">Net Margin %</div>
-        </div>
-
-      </div><!-- /kpi-grid -->
-
-      <!-- TREND CHART + MONTHLY PANEL -->
-      <div class="charts-row two-one">
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <div>
-              <div class="chart-title">Monthly Performance Trend</div>
-              <div class="chart-desc">Sales · Gross Profit · Net Income</div>
-            </div>
-          </div>
-          <div class="chart-wrap" style="height:240px;">
-            <canvas id="trend-chart"></canvas>
-          </div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <div>
-              <div class="chart-title" id="monthly-panel-title">Monthly Snapshot</div>
-              <div class="chart-desc" id="monthly-panel-desc">Selected month KPIs</div>
-            </div>
-          </div>
-          <div id="monthly-panel-content"></div>
-        </div>
-      </div>
-
-      <!-- COGS BREAKDOWN + OPEX STRUCTURE — now full-width split cards -->
-      <div class="charts-row two">
-
-        <!-- COGS Breakdown -->
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <div>
-              <div class="chart-title">COGS Breakdown</div>
-              <div class="chart-desc" id="cogs-chart-desc">Direct Costs — YTD</div>
-            </div>
-            <span class="period-pill" id="cogs-period-pill">YTD</span>
-          </div>
-          <div class="split-card">
-            <div class="split-donut">
-              <div class="chart-wrap" style="height:190px;">
-                <canvas id="cogs-chart"></canvas>
-              </div>
-            </div>
-            <div class="split-list">
-              <div style="font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--gray-400); margin-bottom:6px;">Ranked by Cost</div>
-              <div id="cogs-ranked-list"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- OpEx Structure -->
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <div>
-              <div class="chart-title">OpEx Structure</div>
-              <div class="chart-desc" id="opex-chart-desc">Operating Expenses — YTD</div>
-            </div>
-            <span class="period-pill" id="opex-period-pill">YTD</span>
-          </div>
-          <div class="split-card">
-            <div class="split-donut">
-              <div class="chart-wrap" style="height:190px;">
-                <canvas id="opex-chart"></canvas>
-              </div>
-            </div>
-            <div class="split-list">
-              <div style="font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--gray-400); margin-bottom:6px;">Ranked by Cost</div>
-              <div id="opex-ranked-list"></div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- COMPENSATION DETAIL — full width -->
-      <div class="chart-card" style="margin-bottom:24px;">
-        <div class="chart-card-header">
-          <div>
-            <div class="chart-title">Compensation Detail</div>
-            <div class="chart-desc" id="comp-chart-desc">Payroll Breakdown</div>
-          </div>
-          <span class="period-pill" id="comp-period-pill">YTD</span>
-        </div>
-        <div id="comp-bars" style="padding-top:4px;"></div>
-      </div>
-
-    </div><!-- /view-overview -->
-
-    <!-- ── VIEW: INCOME STATEMENT ───────────────────────── -->
-    <div id="view-income" class="hidden">
-      <div class="section-header">
-        <span class="section-title">Income Statement — Monthly View</span>
-      </div>
-      <div class="table-card">
-        <div class="table-header">
-          <div class="chart-title">Statement of Comprehensive Income</div>
-        </div>
-        <div class="table-wrap">
-          <table id="is-table"></table>
-        </div>
+  <!-- ── BONUS ── -->
+  <div class="view" id="view-bonus">
+    <div class="bonus-hero">
+      <div class="bh-label">📊 Annual Commission Achievement — FY <span id="bhYear">2025</span></div>
+      <div class="bh-title">Performance Bonus Monitoring</div>
+      <div class="bh-pct" id="bhPct">—<span>%</span></div>
+      <div class="bh-bar-wrap"><div class="bh-bar-fill" id="bhBar" style="width:0%"></div></div>
+      <div class="bh-stats">
+        <div><div class="bh-stat-val" id="bhProgress">—</div><div class="bh-stat-lbl">Total Progress</div></div>
+        <div><div class="bh-stat-val" id="bhTarget">—</div><div class="bh-stat-lbl">Annual Target</div></div>
+        <div><div class="bh-stat-val" id="bhRemaining">—</div><div class="bh-stat-lbl">Remaining</div></div>
       </div>
     </div>
-
-    <!-- ── VIEW: COST ANALYSIS ──────────────────────────── -->
-    <div id="view-costs" class="hidden">
-      <div class="section-header">
-        <span class="section-title">Direct Cost Analysis (COGS)</span>
-      </div>
-      <div class="charts-row two" style="margin-bottom:24px;">
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <div class="chart-title">COGS Monthly Trend</div>
-          </div>
-          <div class="chart-wrap" style="height:220px;">
-            <canvas id="cogs-trend-chart"></canvas>
-          </div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <div class="chart-title">Gross Margin % Trend</div>
-          </div>
-          <div class="chart-wrap" style="height:220px;">
-            <canvas id="cogs-gp-chart"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="table-card">
-        <div class="table-header">
-          <div class="chart-title">Direct Costs — Monthly Detail</div>
-        </div>
-        <div class="table-wrap">
-          <table id="cogs-table"></table>
-        </div>
-      </div>
+    <div class="bonus-cards">
+      <div class="bcard g"><div class="bcard-lbl">Months Target Met</div><div class="bcard-val" id="bhMet">—</div><div class="bcard-sub">out of 12 months</div></div>
+      <div class="bcard o"><div class="bcard-lbl">Months Below Target</div><div class="bcard-val" id="bhMiss">—</div><div class="bcard-sub">need improvement</div></div>
+      <div class="bcard" ><div class="bcard-lbl">Monthly Target</div><div class="bcard-val" id="bhMonthly">₱50,000</div><div class="bcard-sub">per month</div></div>
     </div>
-
-    <!-- ── VIEW: OPEX ────────────────────────────────────── -->
-    <div id="view-opex" class="hidden">
-      <div class="section-header">
-        <span class="section-title">Operating Expense Breakdown</span>
-      </div>
-      <div class="charts-row two-one" style="margin-bottom:24px;">
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <div class="chart-title">OpEx Monthly Trend</div>
-          </div>
-          <div class="chart-wrap" style="height:220px;">
-            <canvas id="opex-trend-chart"></canvas>
-          </div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <div class="chart-title">Compensation Trend</div>
-          </div>
-          <div class="chart-wrap" style="height:220px;">
-            <canvas id="comp-trend-chart"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="table-card">
-        <div class="table-header">
-          <div class="chart-title">Compensation & Benefits — Monthly</div>
-        </div>
-        <div class="table-wrap">
-          <table id="comp-table"></table>
-        </div>
-      </div>
+    <div class="bonus-cfg">
+      <label>💡 Monthly Commission Target (₱):</label>
+      <input type="number" id="bonusInput" value="50000" min="0" step="1000" oninput="renderBonus()"/>
+      <span style="color:var(--blue2);font-size:11px;">← Adjust to recalculate instantly</span>
     </div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><h3>Monthly Commission Progress</h3><span style="font-size:11px;color:var(--gray500)">Progress = Staff (2%) + Sales (3%) Commissions</span></div>
+      <div class="tbl-scroll"><table class="data-table" id="bonusTable"></table></div>
+    </div>
+  </div>
 
-    <!-- ── VIEW: BONUS MONITORING ──────────────────────────── -->
-    <div id="view-bonus" class="hidden">
-      <div class="section-header">
-        <span class="section-title">🎯 Performance Bonus Monitoring</span>
-        <span class="section-badge" style="background:var(--blue-50);color:var(--blue-700);" id="bonus-year-badge">FY 2025</span>
-      </div>
+</div>
 
-      <!-- Hero + Side Stats -->
-      <div class="bonus-hero">
-        <div class="bonus-hero-main">
-          <div class="bonus-hero-label">📊 Annual Total — Commission Achievement</div>
-          <div class="bonus-hero-title">Performance Bonus Monitoring</div>
-          <div class="bonus-hero-pct" id="bonus-pct-display">—<span>%</span></div>
-          <div class="bonus-hero-bar-wrap">
-            <div class="bonus-hero-bar-fill" id="bonus-hero-bar" style="width:0%"></div>
-          </div>
-          <div class="bonus-hero-stats">
-            <div class="bonus-hero-stat">
-              <div class="bonus-hero-stat-val" id="bonus-progress-ytd">—</div>
-              <div class="bonus-hero-stat-lbl">Total Progress (YTD)</div>
-            </div>
-            <div class="bonus-hero-stat">
-              <div class="bonus-hero-stat-val" id="bonus-target-ytd">—</div>
-              <div class="bonus-hero-stat-lbl">Annual Target</div>
-            </div>
-            <div class="bonus-hero-stat">
-              <div class="bonus-hero-stat-val" id="bonus-remaining-ytd">—</div>
-              <div class="bonus-hero-stat-lbl">Remaining</div>
-            </div>
-          </div>
-        </div>
-        <div class="bonus-hero-side">
-          <div class="bonus-stat-card green">
-            <div class="bonus-stat-card-label">Months Target Met</div>
-            <div class="bonus-stat-card-val" id="bonus-months-met">—</div>
-            <div class="bonus-stat-card-sub">out of 12 months</div>
-          </div>
-          <div class="bonus-stat-card orange">
-            <div class="bonus-stat-card-label">Months Below Target</div>
-            <div class="bonus-stat-card-val" id="bonus-months-miss">—</div>
-            <div class="bonus-stat-card-sub">need improvement</div>
-          </div>
-          <div class="bonus-stat-card">
-            <div class="bonus-stat-card-label">Monthly Target</div>
-            <div class="bonus-stat-card-val" id="bonus-monthly-target-display">₱50,000</div>
-            <div class="bonus-stat-card-sub">per month</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Target config -->
-      <div class="bonus-config-row">
-        <label>💡 Monthly Commission Target (₱):</label>
-        <input type="number" class="bonus-target-input" id="bonus-target-input"
-               value="50000" min="0" step="1000"
-               oninput="onBonusTargetChange()" />
-        <span style="color:var(--blue-500); font-size:11px;">← Adjust target to recalculate all rows instantly</span>
-      </div>
-
-      <!-- Monthly Table -->
-      <div class="bonus-table-card">
-        <div class="bonus-table-header">
-          <div class="chart-title">Monthly Commission Progress — All Months</div>
-          <span style="font-size:11px; color:var(--gray-400);">Progress = Staff (2%) + Sales (3%) Commissions from IS Summary</span>
-        </div>
-        <div class="table-wrap">
-          <table class="bonus-tbl" id="bonus-table"></table>
-        </div>
-      </div>
-
-    </div><!-- /view-bonus -->
-
-  </div><!-- /dashboard-content -->
-
-</main>
-
-<!-- ── SCRIPTS ────────────────────────────────────────────────── -->
 <script>
-// ════════════════════════════════════════════════════════════
-//  CONFIG — Replace with your Google Apps Script Web App URL
-// ════════════════════════════════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzjNe036LSOmL1jvOxMrFGZQn8e-HPwpJ997LVP18T_ie2_5LB3HPwRiui9fG9sO5s/exec';
-const REFRESH_INTERVAL = 30;
-
-// ── STATE ─────────────────────────────────────────────────────
-let state = {
-  year:         '2025',
-  month:        'all',
-  view:         'overview',
-  data:         null,   // KPI data
-  summaryData:  null,   // Full summary data
-  charts:       {},
-  countdown:    REFRESH_INTERVAL,
-  cdTimer:      null
-};
-
+const API = 'https://script.google.com/macros/s/AKfycbzjNe036LSOmL1jvOxMrFGZQn8e-HPwpJ997LVP18T_ie2_5LB3HPwRiui9fG9sO5s/exec';
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const MONTH_NAMES = {
-  Jan:'January', Feb:'February', Mar:'March', Apr:'April',
-  May:'May',     Jun:'June',     Jul:'July',  Aug:'August',
-  Sep:'September',Oct:'October', Nov:'November',Dec:'December'
+const MN = {Jan:'January',Feb:'February',Mar:'March',Apr:'April',May:'May',Jun:'June',Jul:'July',Aug:'August',Sep:'September',Oct:'October',Nov:'November',Dec:'December'};
+
+let S = { year:'2025', month:'all', view:'overview', data:null, sum:null, charts:{}, activeDrill:null, drillTab:{} };
+
+const C = {
+  blue:'#1d4ed8', blue2:'#3b82f6', blueA:'rgba(59,130,246,.1)',
+  green:'#15803d', green2:'#22c55e', greenA:'rgba(34,197,94,.1)',
+  orange:'#c2410c', orange2:'#f97316', orangeA:'rgba(249,115,22,.1)',
+  teal:'#0e7490', teal2:'#22d3ee', tealA:'rgba(34,211,238,.1)',
+  red:'#b91c1c', red2:'#ef4444', redA:'rgba(239,68,68,.1)',
+  muted:'#64748b', text:'#0f172a', border:'#e2e8f0',
+  comp:['#1d4ed8','#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe']
 };
 
-// ── PALETTE ───────────────────────────────────────────────────
-const COLORS = {
-  blue:    '#2563EB', blueL:   'rgba(37,99,235,.12)',
-  green:   '#16A34A', greenL:  'rgba(22,163,74,.12)',
-  orange:  '#EA580C', orangeL: 'rgba(234,88,12,.12)',
-  teal:    '#0EA5E9', tealL:   'rgba(14,165,233,.12)',
-  gray:    '#94A3B8',
-  cogs:  ['#2563EB','#16A34A','#EA580C','#0EA5E9','#8B5CF6','#F59E0B'],
-  opex:  ['#2563EB','#22C55E','#F97316'],
-  comp:  ['#1D4ED8','#2563EB','#3B82F6','#60A5FA','#93C5FD','#BFDBFE']
+const el = id => document.getElementById(id);
+const peso = (n, compact) => {
+  if (n == null || isNaN(n)) return '—';
+  const a = Math.abs(n);
+  if (compact && a >= 1e6) return '₱' + (n / 1e6).toFixed(2) + 'M';
+  if (compact && a >= 1e3) return '₱' + (n / 1e3).toFixed(1) + 'K';
+  return '₱' + n.toLocaleString('en-PH', {minimumFractionDigits:2,maximumFractionDigits:2});
 };
+const pct  = n => (!n && n !== 0) ? '—' : (n * 100).toFixed(1) + '%';
+const sum  = a => a.reduce((s, v) => s + v, 0);
+const plbl = () => S.month === 'all' ? 'YTD' : (MN[S.month] || S.month);
 
-// ── UTILS ─────────────────────────────────────────────────────
-function peso(n, compact) {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  const abs = Math.abs(n);
-  let s;
-  if (compact && abs >= 1_000_000) s = '₱' + (n/1_000_000).toFixed(2) + 'M';
-  else if (compact && abs >= 1_000)  s = '₱' + (n/1_000).toFixed(1) + 'K';
-  else s = '₱' + n.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2});
-  return s;
-}
-function pct(n) {
-  if (!n && n !== 0) return '—';
-  return (n * 100).toFixed(1) + '%';
-}
-function el(id) { return document.getElementById(id); }
-function show(id) { el(id).classList.remove('hidden'); }
-function hide(id) { el(id).classList.add('hidden'); }
-
-const periodLabel = () => state.month === 'all' ? 'YTD' : (MONTH_NAMES[state.month] || state.month);
-
-// ── DATA ACCESSORS — month-aware ──────────────────────────────
-
-function getCogsBreakdown() {
-  const m  = state.month;
-  const sd = state.summaryData;
-  // Fallback to KPI YTD breakdown if summary not loaded yet
-  if (!sd) return state.data ? state.data.cogsBreakdown : null;
-
-  if (m === 'all') {
-    return {
-      materials:       sd.cogs.materials.YTD,
-      officeSupplies:  sd.cogs.officeSuppliesDirect.YTD,
-      merchandiseSold: sd.cogs.merchandiseSold.YTD,
-      officeFurniture: sd.cogs.officeFurniture.YTD,
-      commissionsDir:  sd.cogs.commissionsDir.YTD,
-      otherDirect:     sd.cogs.otherDirect.YTD
-    };
-  }
+function getVals() {
+  const d = S.data, m = S.month, isAll = m === 'all', i = MONTHS.indexOf(m);
   return {
-    materials:       (sd.cogs.materials[m]             || 0),
-    officeSupplies:  (sd.cogs.officeSuppliesDirect[m]  || 0),
-    merchandiseSold: (sd.cogs.merchandiseSold[m]        || 0),
-    officeFurniture: (sd.cogs.officeFurniture[m]        || 0),
-    commissionsDir:  (sd.cogs.commissionsDir[m]         || 0),
-    otherDirect:     (sd.cogs.otherDirect[m]            || 0)
+    sales: isAll ? d.ytdSales         : (d.monthlyTrend.sales[i]       || 0),
+    gp:    isAll ? d.ytdGrossProfit   : (d.monthlyTrend.grossProfit[i]  || 0),
+    opex:  isAll ? d.ytdOpEx          : (d.monthlyTrend.opex[i]         || 0),
+    ni:    isAll ? d.ytdNetIncome     : (d.monthlyTrend.netIncome[i]    || 0),
+    cogs:  isAll ? sum(d.monthlyTrend.cogs) : (d.monthlyTrend.cogs[i]  || 0)
   };
 }
-
-function getOpexBreakdown() {
-  const m  = state.month;
-  const sd = state.summaryData;
-  if (!sd) return state.data ? state.data.opexBreakdown : null;
-
-  if (m === 'all') {
-    return {
-      compensation: sd.compensation.total.YTD,
-      gaExpenses:   sd.opex.gaExpenses.YTD,
-      commissions:  sd.opex.totalCommissions.YTD
-    };
-  }
-  return {
-    compensation: (sd.compensation.total[m]          || 0),
-    gaExpenses:   (sd.opex.gaExpenses[m]              || 0),
-    commissions:  (sd.opex.totalCommissions[m]        || 0)
-  };
+function getOpexBD() {
+  const m = S.month, sd = S.sum, g = o => m === 'all' ? (o.YTD||0) : (o[m]||0);
+  return sd ? {comp:g(sd.compensation.total), ga:g(sd.opex.gaExpenses), comm:g(sd.opex.totalCommissions)} : null;
+}
+function getCogsBD() {
+  const m = S.month, sd = S.sum, g = o => m === 'all' ? (o.YTD||0) : (o[m]||0);
+  return sd ? {mat:g(sd.cogs.materials),supp:g(sd.cogs.officeSuppliesDirect),merch:g(sd.cogs.merchandiseSold),furn:g(sd.cogs.officeFurniture),comm:g(sd.cogs.commissionsDir),other:g(sd.cogs.otherDirect)} : null;
+}
+function getCompD() {
+  const m = S.month, sd = S.sum, g = o => m === 'all' ? (o.YTD||0) : (o[m]||0);
+  return sd ? {sal:g(sd.compensation.salariesWages),all:g(sd.compensation.allowances),ot:g(sd.compensation.overtime),b13:g(sd.compensation.bonus13th),stat:g(sd.compensation.statutoryBen),sil:g(sd.compensation.sil)} : null;
 }
 
-function getCompDetail() {
-  const m  = state.month;
-  const sd = state.summaryData;
-  if (!sd) return state.data ? state.data.compensationDetail : null;
-
-  if (m === 'all') {
-    return {
-      salariesWages: sd.compensation.salariesWages.YTD,
-      allowances:    sd.compensation.allowances.YTD,
-      overtime:      sd.compensation.overtime.YTD,
-      bonus13th:     sd.compensation.bonus13th.YTD,
-      statutoryBen:  sd.compensation.statutoryBen.YTD,
-      sil:           sd.compensation.sil.YTD
-    };
-  }
-  return {
-    salariesWages: (sd.compensation.salariesWages[m] || 0),
-    allowances:    (sd.compensation.allowances[m]    || 0),
-    overtime:      (sd.compensation.overtime[m]      || 0),
-    bonus13th:     (sd.compensation.bonus13th[m]     || 0),
-    statutoryBen:  (sd.compensation.statutoryBen[m]  || 0),
-    sil:           (sd.compensation.sil[m]           || 0)
-  };
-}
-
-// ── VIEW SWITCHING ────────────────────────────────────────────
 function setView(v) {
-  state.view = v;
-  ['overview','income','costs','opex','bonus'].forEach(name => {
-    const panel = el('view-' + name);
-    if (panel) panel.classList.toggle('hidden', name !== v);
-  });
-  document.querySelectorAll('.nav-link').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('onclick').includes("'" + v + "'"));
-  });
-  if (state.data) renderView();
+  S.view = v;
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  const vEl = el('view-' + v); if (vEl) vEl.classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + v));
+  if (S.data) renderAll();
 }
+function onYearChange() { S.year = el('selYear').value; fetchData(true); }
+function onMonthChange() { S.month = el('selMonth').value; if (S.data) renderAll(); }
 
-function setYear(y) {
-  state.year = y;
-  document.querySelectorAll('.year-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.trim() === y);
-  });
-  el('topbar-title').textContent = 'NAM Wholesale Trading — FY ' + y;
-  fetchData(true);
-}
-
-function onMonthChange() {
-  state.month = el('month-select').value;
-  if (state.data) renderAll();
-}
-
-// ── FETCH DATA ────────────────────────────────────────────────
-async function fetchData(manual = false) {
-  el('refresh-btn').classList.add('loading');
-  el('refresh-btn').textContent = '↻ Loading…';
-  if (manual) resetCountdown();
-
+async function fetchData() {
+  el('btnRefresh').disabled = true;
+  setStatus('loading', 'Connecting to Google Sheets…');
   try {
     const cb = Date.now();
-    // Fetch both KPIs and full summary in parallel
-    const [kpiRes, sumRes] = await Promise.all([
-      fetch(APPS_SCRIPT_URL + '?action=getKPIs&year='     + state.year + '&cb=' + cb),
-      fetch(APPS_SCRIPT_URL + '?action=getSummary&year='  + state.year + '&cb=' + (cb+1))
+    const [kr, sr] = await Promise.all([
+      fetch(API + '?action=getKPIs&year='    + S.year + '&cb=' + cb),
+      fetch(API + '?action=getSummary&year=' + S.year + '&cb=' + (cb + 1))
     ]);
-    const [kpiJson, sumJson] = await Promise.all([kpiRes.json(), sumRes.json()]);
-
-    if (!kpiJson.success) throw new Error(kpiJson.error || 'KPI fetch failed');
-    if (!sumJson.success) throw new Error(sumJson.error || 'Summary fetch failed');
-
-    state.data        = kpiJson.data;
-    state.summaryData = sumJson.data;
-
-    showDashboard();
+    const [kj, sj] = await Promise.all([kr.json(), sr.json()]);
+    if (!kj.success) throw new Error(kj.error || 'KPI failed');
+    if (!sj.success) throw new Error(sj.error || 'Summary failed');
+    S.data = kj.data; S.sum = sj.data;
+    el('periodHead').style.display = 'flex';
+    el('bottomRow').style.display = 'grid';
+    setStatus('ok', '✔ Updated · ' + new Date().toLocaleTimeString('en-PH'));
     renderAll();
-
-    const now = new Date();
-    el('last-updated').textContent = now.toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-
-  } catch (err) {
-    if (!state.data) showError(err.message);
-    console.error('Fetch error:', err);
+  } catch (e) {
+    setStatus('error', '⚠ ' + e.message);
   } finally {
-    el('refresh-btn').classList.remove('loading');
-    el('refresh-btn').textContent = '↻ Refresh';
+    el('btnRefresh').disabled = false;
   }
 }
-
-function showDashboard() {
-  hide('loading-state'); hide('error-state'); show('dashboard-content');
-}
-function showError(msg) {
-  hide('loading-state'); hide('dashboard-content'); show('error-state');
-  el('error-msg').textContent = msg;
-  el('api-url-display').textContent = APPS_SCRIPT_URL.length > 60 ? APPS_SCRIPT_URL.slice(0,60) + '…' : APPS_SCRIPT_URL;
+function setStatus(t, m) {
+  const s = el('statusEl'); s.className = 'status ' + t;
+  s.innerHTML = (t === 'loading' ? '<span class="spin"></span>&nbsp; ' : '') + m;
 }
 
-// ── RENDER ALL ────────────────────────────────────────────────
 function renderAll() {
-  renderKPIs();
-  renderTrendChart();
-  renderCOGSChart();
-  renderOpExChart();
-  renderCompBars();
-  renderISTable();
-  renderCOGSTable();
-  renderCompTable();
-  renderCOGSTrendChart();
-  renderCOGSGPChart();
-  renderOpExTrendChart();
-  renderCompTrendChart();
-  renderBonusMonitoring();
+  const lbl = plbl();
+  el('periodTitle').textContent = 'NAM Wholesale Trading — FY ' + S.year;
+  el('periodBadge').textContent = lbl;
+  el('trendBadge').textContent = 'FY ' + S.year;
+  el('donutBadge').textContent = lbl;
+  renderKPIs(); renderTrend(); renderDonut();
+  renderISTable(); renderCOGSTable(); renderCompTable();
+  renderCOGSTrend(); renderCOGSGP(); renderOpExTrend(); renderCompTrend();
+  renderBonus();
+  if (S.activeDrill) openDrill(S.activeDrill);
 }
-function renderView() { renderAll(); }
 
-// ── KPI CARDS ─────────────────────────────────────────────────
+/* ═══ KPI CARDS ═══ */
 function renderKPIs() {
-  const d = state.data;
-  const m = state.month;
-  const isAll = m === 'all';
+  const v = getVals();
+  const gm = v.sales > 0 ? v.gp   / v.sales : 0;
+  const nm = v.sales > 0 ? v.ni   / v.sales : 0;
+  const opx = v.sales > 0 ? v.opex / v.sales * 100 : 0;
 
-  const sales = isAll ? d.ytdSales      : (d.monthlyTrend.sales[MONTHS.indexOf(m)]      || 0);
-  const gp    = isAll ? d.ytdGrossProfit: (d.monthlyTrend.grossProfit[MONTHS.indexOf(m)] || 0);
-  const opex  = isAll ? d.ytdOpEx       : (d.monthlyTrend.opex[MONTHS.indexOf(m)]        || 0);
-  const ni    = isAll ? d.ytdNetIncome  : (d.monthlyTrend.netIncome[MONTHS.indexOf(m)]   || 0);
-  const gm    = sales > 0 ? gp / sales : 0;
-  const nm    = sales > 0 ? ni / sales : 0;
-
-  const label = isAll ? 'Year-to-Date' : (MONTH_NAMES[m] || m);
-  el('kpi-period-badge').textContent = label;
-
-  el('kpi-sales').textContent    = peso(sales, true);
-  el('kpi-sales-sub').textContent = label;
-  el('kpi-gp').textContent       = peso(gp, true);
-  el('kpi-opex').textContent     = peso(opex, true);
-  el('kpi-ni').textContent       = peso(ni, true);
-
-  const gmBadge = el('kpi-gm-badge');
-  gmBadge.textContent = pct(gm) + ' Gross Margin';
-  gmBadge.className = 'kpi-badge ' + (gm >= 0 ? 'pos' : 'neg');
-
-  const nmBadge = el('kpi-nm-badge');
-  nmBadge.textContent = pct(nm) + ' Net Margin';
-  nmBadge.className = 'kpi-badge ' + (nm >= 0 ? 'pos' : 'neg');
-
-  // OpEx breakdown inside card
-  const opexBd = getOpexBreakdown();
-  if (opexBd) {
-    const total  = opexBd.compensation + opexBd.gaExpenses + opexBd.commissions || 1;
-    const items  = [
-      { label:'Compensation', val: opexBd.compensation, color: COLORS.opex[0] },
-      { label:'G&A Expenses', val: opexBd.gaExpenses,   color: COLORS.opex[1] },
-      { label:'Commissions',  val: opexBd.commissions,  color: COLORS.opex[2] }
-    ].sort((a,b) => b.val - a.val);
-
-    el('kpi-opex-breakdown').innerHTML =
-      '<div class="kpi-breakdown-title">Where we spend</div>' +
-      items.map(item => {
-        const p = total > 0 ? (item.val / total * 100).toFixed(0) : 0;
-        return `
-          <div class="kpi-breakdown-row">
-            <span class="kpi-bd-dot" style="background:${item.color};"></span>
-            <span class="kpi-bd-label">${item.label}</span>
-            <span class="kpi-bd-pct">${p}%</span>
-          </div>
-          <div class="kpi-bd-bar-wrap">
-            <div class="kpi-bd-bar-fill" style="width:${p}%; background:${item.color};"></div>
-          </div>`;
-      }).join('');
-  }
-
-  // Monthly snapshot panel
-  const monthPanel = el('monthly-panel-content');
-  el('monthly-panel-title').textContent = isAll ? 'YTD Summary' : MONTH_NAMES[m] + ' KPIs';
-  el('monthly-panel-desc').textContent  = isAll ? 'Full year aggregates' : 'Selected month snapshot';
-  monthPanel.innerHTML = buildMonthlyMiniKPIs([
-    { label:'Net Sales',    val: peso(sales, true) },
-    { label:'Gross Profit', val: peso(gp, true) },
-    { label:'Total OpEx',   val: peso(opex, true) },
-    { label:'Net Income',   val: peso(ni, true) },
-    { label:'Gross Margin', val: pct(gm) },
-    { label:'Net Margin',   val: pct(nm) }
-  ]);
-}
-
-function buildMonthlyMiniKPIs(items) {
-  return '<div class="monthly-kpis">' +
-    items.map(i => `<div class="m-kpi">
-      <div class="m-kpi-val">${i.val}</div>
-      <div class="m-kpi-lbl">${i.label}</div>
-    </div>`).join('') + '</div>';
-}
-
-// ── RANKED LIST HTML BUILDER ──────────────────────────────────
-function buildRankedList(items, colors) {
-  // items: [{label, val}], sorted descending
-  const sorted = [...items].sort((a,b) => b.val - a.val);
-  const max    = sorted[0]?.val || 1;
-  const total  = sorted.reduce((s,i) => s + i.val, 0) || 1;
-
-  const rankBgs = ['#EFF6FF','#F0FDF4','#FFF7ED','#F0F9FF','#FAF5FF','#FFFBEB'];
-  const rankFgs = ['#1D4ED8','#15803D','#C2410C','#0369A1','#6D28D9','#92400E'];
-
-  return sorted.map((item, idx) => {
-    const pctVal = ((item.val / total) * 100).toFixed(1);
-    const barW   = ((item.val / max) * 100).toFixed(1);
-    return `
-      <div class="breakdown-item">
-        <div class="breakdown-rank" style="background:${rankBgs[idx]||'#F1F5F9'}; color:${rankFgs[idx]||'#475569'};">#${idx+1}</div>
-        <div style="flex:1; min-width:0;">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:4px;">
-            <span class="breakdown-name">${item.label}</span>
-            <div class="breakdown-right">
-              <span class="breakdown-val">${peso(item.val, true)}</span>
-              <span class="breakdown-pct">${pctVal}%</span>
-            </div>
-          </div>
-          <div class="breakdown-bar-wrap">
-            <div class="breakdown-bar-fill" style="width:${barW}%; background:${colors[idx % colors.length]};"></div>
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-}
-
-// ── COGS CHART + RANKED LIST ──────────────────────────────────
-function renderCOGSChart() {
-  const b  = getCogsBreakdown();
-  const id = 'cogs-chart';
-  destroyChart(id);
-  if (!b) return;
-
-  const label = periodLabel();
-  el('cogs-chart-desc').textContent = 'Direct Costs — ' + label;
-  el('cogs-period-pill').textContent = label;
-
-  const labels = ['Materials','Office Supplies','Merchandise Sold','Furniture & Fix.','Commissions Dir.','Other Direct'];
-  const vals   = [b.materials, b.officeSupplies, b.merchandiseSold, b.officeFurniture, b.commissionsDir, b.otherDirect];
-
-  state.charts[id] = new Chart(el(id), {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{ data: vals, backgroundColor: COLORS.cogs, borderWidth: 2, borderColor: '#fff' }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      cutout: '70%',
-      plugins: {
-        legend: { position:'bottom', labels:{ font:{ family:'DM Sans', size:10 }, boxWidth:10, padding:7 } },
-        tooltip: { callbacks:{ label: ctx => ' ' + ctx.label + ': ' + peso(ctx.raw) } }
-      }
-    }
-  });
-
-  // Ranked list
-  const items = labels.map((l,i) => ({ label: l, val: vals[i] }));
-  el('cogs-ranked-list').innerHTML = buildRankedList(items, COLORS.cogs);
-}
-
-// ── OPEX CHART + RANKED LIST ──────────────────────────────────
-function renderOpExChart() {
-  const b  = getOpexBreakdown();
-  const id = 'opex-chart';
-  destroyChart(id);
-  if (!b) return;
-
-  const label = periodLabel();
-  el('opex-chart-desc').textContent = 'Operating Expenses — ' + label;
-  el('opex-period-pill').textContent = label;
-
-  const labels = ['Compensation','G&A Expenses','Commissions'];
-  const vals   = [b.compensation, b.gaExpenses, b.commissions];
-
-  state.charts[id] = new Chart(el(id), {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{ data: vals, backgroundColor: COLORS.opex, borderWidth: 2, borderColor: '#fff' }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      cutout: '70%',
-      plugins: {
-        legend: { position:'bottom', labels:{ font:{ family:'DM Sans', size:10 }, boxWidth:10, padding:7 } },
-        tooltip: { callbacks:{ label: ctx => ' ' + ctx.label + ': ' + peso(ctx.raw) } }
-      }
-    }
-  });
-
-  // Ranked list
-  const items = labels.map((l,i) => ({ label: l, val: vals[i] }));
-  el('opex-ranked-list').innerHTML = buildRankedList(items, COLORS.opex);
-}
-
-// ── COMPENSATION MINI BARS ─────────────────────────────────────
-function renderCompBars() {
-  const c = getCompDetail();
-  if (!c) return;
-
-  const label = periodLabel();
-  el('comp-chart-desc').textContent = 'Payroll Breakdown — ' + label;
-  el('comp-period-pill').textContent = label;
-
-  const items = [
-    { name:'Salaries & Wages',   val: c.salariesWages },
-    { name:'Allowances',         val: c.allowances },
-    { name:'OT / Holidays',      val: c.overtime },
-    { name:'13th Month / Bonus', val: c.bonus13th },
-    { name:'Statutory Benefits', val: c.statutoryBen },
-    { name:'Service Incentive',  val: c.sil }
-  ].sort((a,b) => b.val - a.val);
-
-  const max = Math.max(...items.map(i => i.val), 1);
-
-  // 2-column grid for comp bars
-  el('comp-bars').innerHTML =
-    '<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 24px;">' +
-    items.map((item, idx) => `
-      <div class="mini-bar-row">
-        <div class="mini-bar-label">
-          <span class="mini-bar-name" style="display:flex;align-items:center;gap:5px;">
-            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COLORS.comp[idx]};flex-shrink:0;"></span>
-            ${item.name}
-          </span>
-          <span class="mini-bar-val">${peso(item.val, true)}</span>
-        </div>
-        <div class="mini-bar-track">
-          <div class="mini-bar-fill" style="width:${(item.val/max*100).toFixed(1)}%; background:${COLORS.comp[idx]};"></div>
-        </div>
-      </div>`).join('') +
-    '</div>';
-}
-
-// ── TREND CHART ───────────────────────────────────────────────
-function renderTrendChart() {
-  const d  = state.data.monthlyTrend;
-  const id = 'trend-chart';
-  destroyChart(id);
-  state.charts[id] = new Chart(el(id), {
-    type: 'line',
-    data: {
-      labels: MONTHS,
-      datasets: [
-        { label:'Net Sales',    data: d.sales,       borderColor: COLORS.blue,   backgroundColor: COLORS.blueL,   fill: true,  tension:.4, pointRadius:3, borderWidth:2 },
-        { label:'Gross Profit', data: d.grossProfit, borderColor: COLORS.green,  backgroundColor: COLORS.greenL,  fill: true,  tension:.4, pointRadius:3, borderWidth:2 },
-        { label:'Net Income',   data: d.netIncome,   borderColor: COLORS.teal,   backgroundColor: COLORS.tealL,   fill: false, tension:.4, pointRadius:3, borderWidth:2, borderDash:[5,3] }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode:'index', intersect:false },
-      plugins: {
-        legend: { labels: { font:{ family:'DM Sans', size:11 }, boxWidth:12, padding:16 } },
-        tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + peso(ctx.raw) } }
-      },
-      scales: {
-        x: { grid:{ display:false }, ticks:{ font:{ family:'DM Sans', size:11 } } },
-        y: { grid:{ color:'#F1F5F9' }, ticks:{ font:{ family:'DM Mono', size:10 }, callback: v => peso(v, true) } }
-      }
-    }
-  });
-}
-
-// ── IS TABLE ──────────────────────────────────────────────────
-function renderISTable() {
-  const d = state.data;
-  const t = d.monthlyTrend;
-  const rows = [
-    { label:'── REVENUES', header: true },
-    { label:'Total Sales (Gross)', data: t.sales },
-    { label:'Net Sales',           data: t.sales, bold:true },
-    { label:'── DIRECT COSTS (COGS)', header:true },
-    { label:'Total COGS',          data: t.cogs,       bold:true, neg:true },
-    { label:'── GROSS PROFIT',     data: t.grossProfit, total:true },
-    { label:'── OPERATING EXPENSES', header:true },
-    { label:'Total OpEx',          data: t.opex, neg:true },
-    { label:'── NET INCOME (BEFORE TAX)', data: t.netIncome, total:true }
+  const cards = [
+    { id:'sales', cls:'kpi-blue',   icon:'💰', label:'Net Sales',
+      value: peso(v.sales, true), meta: 'Gross Profit: ' + peso(v.gp, true),
+      change: plbl() + ' Revenue', chCls:'ch-flat', bar:100 },
+    { id:'gp',    cls:'kpi-green',  icon:'📈', label:'Gross Profit',
+      value: peso(v.gp, true),   meta: 'Margin: ' + pct(gm),
+      change: (gm >= 0 ? '▲ ' : '▼ ') + pct(gm) + ' GM', chCls: gm >= 0 ? 'ch-up' : 'ch-down',
+      bar: Math.min(Math.max(gm * 200, 0), 100) },
+    { id:'opex',  cls:'kpi-orange', icon:'🏷️', label:'Total OpEx',
+      value: peso(v.opex, true), meta: 'Operating Expenses',
+      change: opx.toFixed(1) + '% of Net Sales', chCls:'ch-ora',
+      bar: Math.min(opx, 100) },
+    { id:'ni', cls: v.ni >= 0 ? 'kpi-teal' : 'kpi-red', icon: v.ni >= 0 ? '🏦' : '📉', label:'Net Income',
+      value: peso(v.ni, true), meta: 'Net Margin: ' + pct(nm),
+      change: v.ni >= 0 ? '▲ ' + pct(nm) + ' NM' : '▼ Net Loss', chCls: v.ni >= 0 ? 'ch-up' : 'ch-down',
+      bar: Math.min(Math.abs(nm) * 300, 100) }
   ];
-  const ytd = arr => arr.reduce((a,b) => a+b, 0);
-  const header = `<thead><tr>
-    <th>DESCRIPTION</th>${MONTHS.map(m => `<th>${m}</th>`).join('')}<th>YTD TOTAL</th>
-  </tr></thead>`;
-  const body = '<tbody>' + rows.map(r => {
-    if (r.header) return `<tr class="row-header"><td colspan="${MONTHS.length+2}">${r.label}</td></tr>`;
-    const cls = r.total ? ' class="row-total"' : '';
-    const cells = r.data.map(v => {
-      const c = r.neg && v > 0 ? ' class="amt-neg"' : '';
-      return `<td${c}>${peso(v)}</td>`;
-    }).join('');
-    const ytdV = ytd(r.data);
-    const ytdC = r.neg && ytdV > 0 ? ' class="amt-neg"' : '';
-    return `<tr${cls}><td>${r.label}</td>${cells}<td${ytdC}>${peso(ytdV)}</td></tr>`;
-  }).join('') + '</tbody>';
-  el('is-table').innerHTML = header + body;
+
+  el('kpiGrid').innerHTML = cards.map(c =>
+    `<div class="kpi ${c.cls}" id="kpi-${c.id}" onclick="toggleDrill('${c.id}')">
+      <div class="kpi-icon">${c.icon}</div>
+      <div class="kpi-dot"></div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      <div class="kpi-meta">${c.meta}</div>
+      <span class="kpi-change ${c.chCls}">${c.change}</span>
+      <div class="kpi-bar"><div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:${c.bar}%"></div></div></div>
+      <div class="kpi-arrow">▾</div>
+    </div>`
+  ).join('');
 }
 
-// ── COGS TABLE ────────────────────────────────────────────────
-function renderCOGSTable() {
-  const t = state.data.monthlyTrend;
-  const ytd = arr => arr.reduce((a,b) => a+b, 0);
-
-  // If summary available, show full COGS line items
-  if (state.summaryData) {
-    const sd = state.summaryData;
-    const cogsItems = [
-      { label:'Materials',            data: sd.cogs.materials },
-      { label:'Office Supplies',      data: sd.cogs.officeSuppliesDirect },
-      { label:'Merchandise Sold',     data: sd.cogs.merchandiseSold },
-      { label:'Office Furniture',     data: sd.cogs.officeFurniture },
-      { label:'Commissions (Direct)', data: sd.cogs.commissionsDir },
-      { label:'Other Direct',         data: sd.cogs.otherDirect }
-    ];
-    const header = `<thead><tr>
-      <th>COGS ITEM</th>${MONTHS.map(m => `<th>${m}</th>`).join('')}<th>YTD</th>
-    </tr></thead>`;
-    const body = '<tbody>' +
-      cogsItems.map(item => {
-        const vals = MONTHS.map(m => item.data[m] || 0);
-        const ytdV = item.data.YTD || ytd(vals);
-        return `<tr>
-          <td>${item.label}</td>
-          ${vals.map(v => `<td class="amt-neg">${peso(v)}</td>`).join('')}
-          <td class="amt-neg">${peso(ytdV)}</td>
-        </tr>`;
-      }).join('') +
-      `<tr class="row-total">
-        <td>Total COGS</td>
-        ${MONTHS.map(m => `<td class="amt-neg">${peso(sd.cogs.total[m]||0)}</td>`).join('')}
-        <td class="amt-neg">${peso(sd.cogs.total.YTD)}</td>
-      </tr>
-      <tr class="row-total">
-        <td>Gross Profit</td>
-        ${MONTHS.map(m => `<td class="${(sd.grossProfit.amount[m]||0)>=0?'amt-pos':'amt-neg'}">${peso(sd.grossProfit.amount[m]||0)}</td>`).join('')}
-        <td class="${sd.grossProfit.amount.YTD>=0?'amt-pos':'amt-neg'}">${peso(sd.grossProfit.amount.YTD)}</td>
-      </tr>` +
-      '</tbody>';
-    el('cogs-table').innerHTML = header + body;
+/* ═══ DRILL ═══ */
+function toggleDrill(id) {
+  if (S.activeDrill === id) {
+    S.activeDrill = null;
+    document.querySelectorAll('.kpi').forEach(c => c.classList.remove('active'));
+    el('drillPanel').style.display = 'none';
     return;
   }
-
-  // Fallback
-  const header = `<thead><tr>
-    <th>COGS ITEM</th>${MONTHS.map(m => `<th>${m}</th>`).join('')}<th>YTD</th>
-  </tr></thead>`;
-  const body = `<tbody>
-    <tr class="row-total">
-      <td>Total COGS</td>
-      ${t.cogs.map(v => `<td class="amt-neg">${peso(v)}</td>`).join('')}
-      <td class="amt-neg">${peso(ytd(t.cogs))}</td>
-    </tr>
-    <tr class="row-total">
-      <td>Gross Profit</td>
-      ${t.grossProfit.map(v => `<td class="${v>=0?'amt-pos':'amt-neg'}">${peso(v)}</td>`).join('')}
-      <td class="${ytd(t.grossProfit)>=0?'amt-pos':'amt-neg'}">${peso(ytd(t.grossProfit))}</td>
-    </tr>
-  </tbody>`;
-  el('cogs-table').innerHTML = header + body;
+  S.activeDrill = id;
+  document.querySelectorAll('.kpi').forEach(c => c.classList.remove('active'));
+  const kc = el('kpi-' + id); if (kc) kc.classList.add('active');
+  openDrill(id);
 }
 
-// ── COMP TABLE ────────────────────────────────────────────────
-function renderCompTable() {
-  const ytd = arr => arr.reduce((a,b) => a+b, 0);
+function openDrill(id) {
+  if (!S.data) return;
+  if (!S.drillTab[id]) S.drillTab[id] = 'chart';
+  const tab = S.drillTab[id];
 
-  if (state.summaryData) {
-    const sd = state.summaryData;
-    const compItems = [
-      { label:'Salaries & Wages',   data: sd.compensation.salariesWages },
-      { label:'Allowances',         data: sd.compensation.allowances },
-      { label:'Overtime / Holidays',data: sd.compensation.overtime },
-      { label:'13th Month / Bonus', data: sd.compensation.bonus13th },
-      { label:'Statutory Benefits', data: sd.compensation.statutoryBen },
-      { label:'Service Incentive',  data: sd.compensation.sil }
-    ];
-    const header = `<thead><tr>
-      <th>COMP ITEM</th>${MONTHS.map(m => `<th>${m}</th>`).join('')}<th>YTD</th>
-    </tr></thead>`;
-    const body = '<tbody>' +
-      compItems.map(item => {
-        const vals = MONTHS.map(m => item.data[m] || 0);
-        const ytdV = item.data.YTD || ytd(vals);
-        return `<tr>
-          <td>${item.label}</td>
-          ${vals.map(v => `<td>${peso(v)}</td>`).join('')}
-          <td>${peso(ytdV)}</td>
-        </tr>`;
-      }).join('') +
-      `<tr class="row-total">
-        <td>Total Compensation</td>
-        ${MONTHS.map(m => `<td>${peso(sd.compensation.total[m]||0)}</td>`).join('')}
-        <td>${peso(sd.compensation.total.YTD)}</td>
-      </tr>` +
-      '</tbody>';
-    el('comp-table').innerHTML = header + body;
-    return;
-  }
+  const cfg = {
+    sales: { title:'Net Sales Detail',    sub:'Revenue & profit breakdown',     cls:'' },
+    gp:    { title:'Gross Profit Detail', sub:'COGS & margin analysis',          cls:'dp-green' },
+    opex:  { title:'OpEx Breakdown',      sub:'Operating expense structure',     cls:'dp-orange' },
+    ni:    { title:'Net Income Detail',   sub:'Bottom-line analysis',            cls: getVals().ni >= 0 ? 'dp-teal' : 'dp-red' }
+  };
+  const c = cfg[id];
 
-  // Fallback
-  const t = state.data.monthlyTrend;
-  const header = `<thead><tr>
-    <th>MONTH</th><th>Net Sales</th><th>Total OpEx</th>
-  </tr></thead>`;
-  const body = '<tbody>' + MONTHS.map((m,i) => `
-    <tr>
-      <td>${m}</td>
-      <td>${peso(t.sales[i])}</td>
-      <td class="amt-neg">${peso(t.opex[i])}</td>
-    </tr>`).join('') +
-    `<tr class="row-total">
-      <td>YTD TOTAL</td>
-      <td>${peso(ytd(t.sales))}</td>
-      <td>${peso(ytd(t.opex))}</td>
-    </tr>` + '</tbody>';
-  el('comp-table').innerHTML = header + body;
-}
+  const tabMap = {
+    sales: [{k:'chart',l:'📊 Chart'},{k:'table',l:'📋 Table'}],
+    gp:    [{k:'chart',l:'📊 COGS Donut'},{k:'trend',l:'📈 Trend'},{k:'table',l:'📋 Table'}],
+    opex:  [{k:'chart',l:'📊 Donut'},{k:'bars',l:'📏 Bars'},{k:'table',l:'📋 Table'}],
+    ni:    [{k:'chart',l:'📊 Chart'},{k:'table',l:'📋 Table'}]
+  };
 
-// ── COGS TREND CHART ──────────────────────────────────────────
-function renderCOGSTrendChart() {
-  const d  = state.data.monthlyTrend;
-  const id = 'cogs-trend-chart';
-  destroyChart(id);
-  state.charts[id] = new Chart(el(id), {
-    type: 'bar',
-    data: {
-      labels: MONTHS,
-      datasets: [
-        { label:'COGS',         data: d.cogs,        backgroundColor: COLORS.orangeL, borderColor: COLORS.orange, borderWidth:1.5, borderRadius:4 },
-        { label:'Gross Profit', data: d.grossProfit, backgroundColor: COLORS.greenL,  borderColor: COLORS.green,  borderWidth:1.5, borderRadius:4 }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{font:{family:'DM Sans',size:11},boxWidth:12,padding:12}},
-        tooltip:{callbacks:{label: ctx=>' '+ctx.dataset.label+': '+peso(ctx.raw)}} },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11}}},
-        y:{grid:{color:'#F1F5F9'},ticks:{font:{family:'DM Mono',size:10},callback:v=>peso(v,true)}}
-      }
-    }
-  });
-}
+  const tabHtml = (tabMap[id] || []).map(t =>
+    `<button class="dtab${tab === t.k ? ' active' : ''}" onclick="setDrillTab('${id}','${t.k}')">${t.l}</button>`
+  ).join('');
 
-// ── COGS vs GP CHART ──────────────────────────────────────────
-function renderCOGSGPChart() {
-  const d  = state.data.monthlyTrend;
-  const id = 'cogs-gp-chart';
-  destroyChart(id);
-  const gmPct = d.sales.map((s,i) => s>0 ? +(d.grossProfit[i]/s*100).toFixed(1) : 0);
-  state.charts[id] = new Chart(el(id), {
-    type: 'line',
-    data: {
-      labels: MONTHS,
-      datasets: [{ label:'Gross Margin %', data: gmPct, borderColor: COLORS.green, backgroundColor: COLORS.greenL, fill:true, tension:.4, pointRadius:4, borderWidth:2, yAxisID:'pct' }]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{font:{family:'DM Sans',size:11},boxWidth:12,padding:12}},
-        tooltip:{callbacks:{label: ctx=>' '+ctx.dataset.label+': '+ctx.raw+'%'}} },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11}}},
-        pct:{grid:{color:'#F1F5F9'},ticks:{font:{family:'DM Mono',size:10},callback:v=>v+'%'}}
-      }
-    }
-  });
-}
-
-// ── OPEX TREND CHART ──────────────────────────────────────────
-function renderOpExTrendChart() {
-  const d  = state.data.monthlyTrend;
-  const id = 'opex-trend-chart';
-  destroyChart(id);
-  state.charts[id] = new Chart(el(id), {
-    type: 'bar',
-    data: {
-      labels: MONTHS,
-      datasets: [
-        { label:'Total OpEx', data: d.opex,  backgroundColor: COLORS.orangeL, borderColor: COLORS.orange, borderWidth:1.5, borderRadius:4 },
-        { label:'Net Sales',  data: d.sales, type:'line', borderColor: COLORS.blue, backgroundColor:'transparent', tension:.4, pointRadius:3, borderWidth:2 }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{font:{family:'DM Sans',size:11},boxWidth:12,padding:12}},
-        tooltip:{callbacks:{label: ctx=>' '+ctx.dataset.label+': '+peso(ctx.raw)}} },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11}}},
-        y:{grid:{color:'#F1F5F9'},ticks:{font:{family:'DM Mono',size:10},callback:v=>peso(v,true)}}
-      }
-    }
-  });
-}
-
-// ── COMP TREND CHART ──────────────────────────────────────────
-function renderCompTrendChart() {
-  const d  = state.data.monthlyTrend;
-  const id = 'comp-trend-chart';
-  destroyChart(id);
-
-  let compData = d.opex; // fallback
-  if (state.summaryData) {
-    compData = MONTHS.map(m => state.summaryData.compensation.total[m] || 0);
-  }
-
-  state.charts[id] = new Chart(el(id), {
-    type: 'line',
-    data: {
-      labels: MONTHS,
-      datasets: [
-        { label:'Compensation', data: compData, borderColor: COLORS.blue,   backgroundColor: COLORS.blueL,   fill:true,  tension:.4, pointRadius:3, borderWidth:2 },
-        { label:'Total OpEx',   data: d.opex,   borderColor: COLORS.orange, backgroundColor: COLORS.orangeL, fill:false, tension:.4, pointRadius:3, borderWidth:2, borderDash:[4,3] }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      interaction:{mode:'index',intersect:false},
-      plugins:{ legend:{labels:{font:{family:'DM Sans',size:11},boxWidth:12,padding:12}},
-        tooltip:{callbacks:{label: ctx=>' '+ctx.dataset.label+': '+peso(ctx.raw)}} },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11}}},
-        y:{grid:{color:'#F1F5F9'},ticks:{font:{family:'DM Mono',size:10},callback:v=>peso(v,true)}}
-      }
-    }
-  });
-}
-
-// ── CHART HELPERS ─────────────────────────────────────────────
-function destroyChart(id) {
-  if (state.charts[id]) { state.charts[id].destroy(); delete state.charts[id]; }
-}
-
-// ── AUTO REFRESH ──────────────────────────────────────────────
-function startCountdown() {
-  state.countdown = REFRESH_INTERVAL;
-  clearInterval(state.cdTimer);
-  state.cdTimer = setInterval(() => {
-    state.countdown--;
-    el('countdown-text').textContent = `Refreshing in ${state.countdown}s`;
-    if (state.countdown <= 0) { fetchData(); resetCountdown(); }
-  }, 1000);
-}
-function resetCountdown() {
-  clearInterval(state.cdTimer);
-  state.countdown = REFRESH_INTERVAL;
-  el('countdown-text').textContent = `Refreshing in ${REFRESH_INTERVAL}s`;
-  state.cdTimer = setInterval(() => {
-    state.countdown--;
-    el('countdown-text').textContent = `Refreshing in ${state.countdown}s`;
-    if (state.countdown <= 0) { fetchData(); resetCountdown(); }
-  }, 1000);
-}
-
-// ── BONUS MONITORING ─────────────────────────────────────────
-function getBonusMonthlyTarget() {
-  const inp = el('bonus-target-input');
-  return inp ? (parseFloat(inp.value) || 50000) : 50000;
-}
-
-function onBonusTargetChange() {
-  if (state.data) renderBonusMonitoring();
-}
-
-function renderBonusMonitoring() {
-  const sd = state.summaryData;
-  const d  = state.data;
-  if (!sd && !d) return;
-
-  const monthlyTarget = getBonusMonthlyTarget();
-  const annualTarget  = monthlyTarget * 12;
-
-  el('bonus-year-badge').textContent     = 'FY ' + state.year;
-  el('bonus-monthly-target-display').textContent = peso(monthlyTarget);
-
-  // Build per-month data
-  // Progress = totalCommissions (staffCommission + salesCommission) per month — row 79
-  // Net Income = netIncome.afterTax per month — row 84
-  const monthlyRows = MONTHS.map((m, i) => {
-    let progress  = 0;
-    let netIncome = 0;
-
-    if (sd) {
-      // Use real per-month data from summary
-      progress  = (sd.opex.totalCommissions[m] || 0);
-      netIncome = (sd.netIncome.afterTax[m]    || 0);
-    } else if (d) {
-      // Fallback: use KPI trend data
-      progress  = d.monthlyTrend.opex[i] * 0.05; // approx 5% commissions
-      netIncome = d.monthlyTrend.netIncome[i] || 0;
-    }
-
-    const variance    = progress - monthlyTarget;
-    const pctAchieved = monthlyTarget > 0 ? progress / monthlyTarget : 0;
-    const met         = pctAchieved >= 1;
-
-    return { month: m, target: monthlyTarget, progress, variance, pctAchieved, met, netIncome };
-  });
-
-  // Annual totals
-  const annualProgress  = monthlyRows.reduce((s, r) => s + r.progress, 0);
-  const annualVariance  = annualProgress - annualTarget;
-  const annualPct       = annualTarget > 0 ? annualProgress / annualTarget : 0;
-  const annualNetIncome = monthlyRows.reduce((s, r) => s + r.netIncome, 0);
-  const monthsMet       = monthlyRows.filter(r => r.met).length;
-  const monthsMiss      = 12 - monthsMet;
-
-  // ── Hero panel ──
-  const pctDisplay = (annualPct * 100).toFixed(1);
-  el('bonus-pct-display').innerHTML  = pctDisplay + '<span>%</span>';
-  el('bonus-hero-bar').style.width   = Math.min(annualPct * 100, 100).toFixed(1) + '%';
-  el('bonus-progress-ytd').textContent = peso(annualProgress);
-  el('bonus-target-ytd').textContent   = peso(annualTarget);
-
-  const remaining = annualTarget - annualProgress;
-  const remEl = el('bonus-remaining-ytd');
-  remEl.textContent = remaining > 0 ? peso(remaining) : '✅ Exceeded!';
-  remEl.style.color = remaining > 0 ? 'white' : '#86EFAC';
-
-  el('bonus-months-met').textContent  = monthsMet;
-  el('bonus-months-miss').textContent = monthsMiss;
-
-  // ── Table ──
-  const thead = `<thead><tr>
-    <th>MONTH</th>
-    <th class="num">TARGET (₱)</th>
-    <th class="num">PROGRESS (₱)</th>
-    <th class="num">VARIANCE (₱)</th>
-    <th>BATTERY LEVEL</th>
-    <th class="num">% ACHIEVED</th>
-    <th class="num">NET PROFIT (₱)</th>
-    <th>NET INCOME STATUS</th>
-  </tr></thead>`;
-
-  const tbodyRows = monthlyRows.map(r => {
-    const pctVal  = (r.pctAchieved * 100).toFixed(1);
-    const barCap  = Math.min(r.pctAchieved * 100, 100).toFixed(1);
-    const barClass = r.pctAchieved >= 1 ? 'high' : r.pctAchieved >= 0.5 ? 'med' : 'low';
-    const varCls  = r.variance >= 0 ? 'amt-pos' : 'amt-neg';
-    const niCls   = r.netIncome >= 0 ? 'amt-pos' : 'amt-neg';
-
-    const batteryCell = r.met
-      ? `<div class="batt-wrap">
-           <div class="batt-track" style="flex:1;">
-             <div class="batt-fill high" style="width:100%;"></div>
-           </div>
-           <span class="batt-met">🏆 TARGET MET!</span>
-         </div>`
-      : `<div class="batt-wrap">
-           <div class="batt-track">
-             <div class="batt-fill ${barClass}" style="width:${barCap}%;"></div>
-           </div>
-           <span class="batt-label">${pctVal}%</span>
-         </div>`;
-
-    const targetStatus = r.met
-      ? '<span class="status-pill met">✅ Target Met</span>'
-      : '<span class="status-pill notmet">🔴 Target Not Met</span>';
-
-    const incomeStatus = r.netIncome >= 0
-      ? '<span class="status-pill profit">✅ Profit</span>'
-      : '<span class="status-pill loss">🔴 Loss</span>';
-
-    return `<tr>
-      <td style="font-weight:600;">${r.month}</td>
-      <td class="num">${peso(r.target)}</td>
-      <td class="num" style="font-weight:600;">${peso(r.progress)}</td>
-      <td class="num ${varCls}">${r.variance >= 0 ? '+' : ''}${peso(r.variance)}</td>
-      <td>${batteryCell}</td>
-      <td class="num" style="font-weight:700;">${pctVal}%</td>
-      <td class="num ${niCls}">${peso(r.netIncome)}</td>
-      <td>${incomeStatus}</td>
-    </tr>`;
-  });
-
-  // Annual total row
-  const annualBarCap  = Math.min(annualPct * 100, 100).toFixed(1);
-  const annualPctDisp = (annualPct * 100).toFixed(1);
-  const annualNiCls   = annualNetIncome >= 0 ? 'amt-pos' : '';
-  const annualVarSign = annualVariance >= 0 ? '+' : '';
-
-  const annualBattery = `<div class="batt-wrap">
-    <div class="batt-track">
-      <div class="batt-fill high" style="width:${annualBarCap}%;"></div>
+  const panel = el('drillPanel');
+  panel.style.display = 'block';
+  panel.className = 'drill-panel ' + c.cls;
+  panel.innerHTML = `
+    <div class="drill-header">
+      <div class="drill-header-left"><h3>${c.title}</h3><p>${c.sub} · ${plbl()} ${S.year}</p></div>
+      <button class="drill-close" onclick="toggleDrill('${id}')">✕</button>
     </div>
-    <span class="batt-label">${annualPctDisp}%</span>
-  </div>`;
+    <div class="drill-body">
+      <div class="drill-stats">${buildStats(id)}</div>
+      <div class="drill-tabs">${tabHtml}</div>
+      <div id="drillContent">${buildContent(id, tab)}</div>
+    </div>`;
 
-  const totalRow = `<tr class="bonus-total">
-    <td>ANNUAL TOTAL</td>
-    <td class="num">${peso(annualTarget)}</td>
-    <td class="num">${peso(annualProgress)}</td>
-    <td class="num">${annualVarSign}${peso(annualVariance)}</td>
-    <td>${annualBattery}</td>
-    <td class="num">${annualPctDisp}%</td>
-    <td class="num">${peso(annualNetIncome)}</td>
-    <td style="font-family:'DM Sans',sans-serif; font-size:11px; color:rgba(255,255,255,.8);">
-      ${monthsMet}/12 months met
-    </td>
-  </tr>`;
+  setTimeout(() => { initDrillChart(id, tab); panel.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 60);
+}
+function setDrillTab(id, tab) { S.drillTab[id] = tab; openDrill(id); }
 
-  el('bonus-table').innerHTML = thead + '<tbody>' + tbodyRows.join('') + totalRow + '</tbody>';
+function buildStats(id) {
+  const v = getVals(), ob = getOpexBD() || {};
+  const gm = v.sales > 0 ? v.gp / v.sales : 0;
+  const nm = v.sales > 0 ? v.ni / v.sales : 0;
+  const map = {
+    sales: [{v:peso(v.sales,true),l:'Net Sales'},{v:peso(v.gp,true),l:'Gross Profit'},{v:pct(gm),l:'GM %'},{v:peso(v.ni,true),l:'Net Income'}],
+    gp:    [{v:peso(v.gp,true),l:'Gross Profit'},{v:peso(v.cogs,true),l:'Total COGS'},{v:pct(gm),l:'GM %'},{v:peso(v.sales,true),l:'Net Sales'}],
+    opex:  [{v:peso(v.opex,true),l:'Total OpEx'},{v:peso(ob.comp||0,true),l:'Compensation'},{v:peso(ob.ga||0,true),l:'G&A'},{v:peso(ob.comm||0,true),l:'Commissions'}],
+    ni:    [{v:peso(v.ni,true),l:'Net Income'},{v:peso(v.sales,true),l:'Revenue'},{v:peso(v.gp,true),l:'Gross Profit'},{v:pct(nm),l:'Net Margin'}]
+  };
+  return (map[id] || []).map(s => `<div class="dstat"><div class="dstat-val">${s.v}</div><div class="dstat-lbl">${s.l}</div></div>`).join('');
 }
 
+function buildContent(id, tab) {
+  if (tab === 'table') return buildDrillTable(id);
+  if (tab === 'bars')  return buildDrillBars();
+  return `<div class="drill-chart"><canvas id="drillCanvas"></canvas></div>`;
+}
 
+function buildDrillTable(id) {
+  const d = S.data.monthlyTrend;
+  const H = cols => '<thead><tr>' + cols.map((c,i) => `<th${i ? ' class="num"' : ''}>${c}</th>`).join('') + '</tr></thead>';
+  if (id === 'sales') {
+    return '<table class="data-table">' + H(['MONTH','Net Sales','Gross Profit','COGS','Net Income']) +
+      '<tbody>' + MONTHS.map((m,i) => `<tr><td>${m}</td><td class="num">${peso(d.sales[i])}</td><td class="num ${d.grossProfit[i]>=0?'vp':'vn'}">${peso(d.grossProfit[i])}</td><td class="num amt-neg">${peso(d.cogs[i])}</td><td class="num ${d.netIncome[i]>=0?'vp':'vn'}">${peso(d.netIncome[i])}</td></tr>`).join('') +
+      `<tr class="tot"><td>YTD</td><td class="num">${peso(sum(d.sales))}</td><td class="num">${peso(sum(d.grossProfit))}</td><td class="num">${peso(sum(d.cogs))}</td><td class="num">${peso(sum(d.netIncome))}</td></tr></tbody></table>`;
+  }
+  if (id === 'gp' && S.sum) {
+    const sd = S.sum;
+    const items = [{l:'Materials',d:sd.cogs.materials},{l:'Office Supplies',d:sd.cogs.officeSuppliesDirect},{l:'Merchandise Sold',d:sd.cogs.merchandiseSold},{l:'Office Furniture',d:sd.cogs.officeFurniture},{l:'Commissions (Dir)',d:sd.cogs.commissionsDir},{l:'Other Direct',d:sd.cogs.otherDirect}];
+    return '<table class="data-table">' + H(['COGS ITEM',...MONTHS,'YTD']) +
+      '<tbody>' + items.map(it => `<tr><td>${it.l}</td>${MONTHS.map(m=>`<td class="num amt-neg">${peso(it.d[m]||0)}</td>`).join('')}<td class="num amt-neg">${peso(it.d.YTD||0)}</td></tr>`).join('') +
+      `<tr class="tot"><td>Total COGS</td>${MONTHS.map(m=>`<td class="num">${peso(sd.cogs.total[m]||0)}</td>`).join('')}<td class="num">${peso(sd.cogs.total.YTD||0)}</td></tr></tbody></table>`;
+  }
+  if (id === 'opex' && S.sum) {
+    const sd = S.sum;
+    const items = [{l:'Compensation',d:sd.compensation.total},{l:'G&A Expenses',d:sd.opex.gaExpenses},{l:'Commissions',d:sd.opex.totalCommissions}];
+    return '<table class="data-table">' + H(['OPEX ITEM',...MONTHS,'YTD']) +
+      '<tbody>' + items.map(it => `<tr><td>${it.l}</td>${MONTHS.map(m=>`<td class="num">${peso(it.d[m]||0)}</td>`).join('')}<td class="num">${peso(it.d.YTD||0)}</td></tr>`).join('') + '</tbody></table>';
+  }
+  return '<table class="data-table">' + H(['MONTH','Net Sales','OpEx','Net Income']) +
+    '<tbody>' + MONTHS.map((m,i) => `<tr><td>${m}</td><td class="num">${peso(d.sales[i])}</td><td class="num amt-neg">${peso(d.opex[i])}</td><td class="num ${d.netIncome[i]>=0?'vp':'vn'}">${peso(d.netIncome[i])}</td></tr>`).join('') +
+    `<tr class="tot"><td>YTD</td><td class="num">${peso(sum(d.sales))}</td><td class="num">${peso(sum(d.opex))}</td><td class="num">${peso(sum(d.netIncome))}</td></tr></tbody></table>`;
+}
 
-// ── INIT ──────────────────────────────────────────────────────
-(function init() {
-  fetchData();
-  startCountdown();
+function buildDrillBars() {
+  const ob = getOpexBD(); if (!ob) return '';
+  const items = [{n:'Compensation',v:ob.comp,c:C.blue2},{n:'G&A Expenses',v:ob.ga,c:C.green2},{n:'Commissions',v:ob.comm,c:C.orange2}].sort((a,b)=>b.v-a.v);
+  const mx = Math.max(...items.map(i=>i.v),1), tot = items.reduce((s,i)=>s+i.v,0)||1;
+  return '<div style="display:flex;flex-direction:column;gap:14px;padding:4px 0;">' +
+    items.map(it => `<div class="mb"><div class="mb-top"><span class="mb-name"><span class="mb-dot" style="background:${it.c}"></span>${it.n}</span><span class="mb-val">${peso(it.v,true)} <span style="color:var(--gray500);font-size:10px">${(it.v/tot*100).toFixed(0)}%</span></span></div><div class="mb-track"><div class="mb-fill" style="width:${(it.v/mx*100).toFixed(1)}%;background:${it.c}"></div></div></div>`).join('') + '</div>';
+}
+
+function initDrillChart(id, tab) {
+  const ctx = el('drillCanvas'); if (!ctx) return;
+  if (S.charts.drill) { S.charts.drill.destroy(); delete S.charts.drill; }
+  const d = S.data.monthlyTrend;
+  const opts = {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:C.text,font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.dataset.label+': '+peso(c.raw)}}},scales:{x:{ticks:{color:C.muted,font:{size:10},maxRotation:35},grid:{color:'#f1f5f9'}},y:{ticks:{color:C.muted,font:{size:10},callback:v=>peso(v,true)},grid:{color:'#f1f5f9'}}}};
+  if (id === 'gp' && tab === 'chart') {
+    const b = getCogsBD() || {};
+    S.charts.drill = new Chart(ctx, {type:'doughnut', data:{labels:['Materials','Office Supp.','Merchandise','Furniture','Commissions','Other'],datasets:[{data:[b.mat,b.supp,b.merch,b.furn,b.comm,b.other],backgroundColor:[C.blue2,C.green2,C.orange2,C.teal2,C.red2,'#8b5cf6'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},tooltip:{callbacks:{label:c=>' '+c.label+': '+peso(c.raw)}}}}}); return;
+  }
+  if (id === 'opex' && tab === 'chart') {
+    const ob = getOpexBD() || {};
+    S.charts.drill = new Chart(ctx, {type:'doughnut', data:{labels:['Compensation','G&A Expenses','Commissions'],datasets:[{data:[ob.comp,ob.ga,ob.comm],backgroundColor:[C.blue2,C.green2,C.orange2],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},tooltip:{callbacks:{label:c=>' '+c.label+': '+peso(c.raw)}}}}}); return;
+  }
+  let type = 'bar', labels = MONTHS, datasets = [];
+  if (id === 'sales') { type='line'; datasets=[{label:'Net Sales',data:d.sales,borderColor:C.blue2,backgroundColor:C.blueA,fill:true,tension:.4,pointRadius:3,borderWidth:2},{label:'Gross Profit',data:d.grossProfit,borderColor:C.green2,backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3]}]; }
+  else if (id === 'gp') { datasets=[{label:'COGS',data:d.cogs,backgroundColor:C.orangeA,borderColor:C.orange2,borderWidth:1.5,borderRadius:5},{label:'Gross Profit',data:d.grossProfit,type:'line',borderColor:C.green2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2}]; }
+  else if (id === 'ni') { datasets=[{label:'Net Sales',data:d.sales,type:'line',borderColor:C.blue2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2,borderDash:[4,3]},{label:'Net Income',data:d.netIncome,backgroundColor:d.netIncome.map(v=>v>=0?C.greenA:C.redA),borderColor:d.netIncome.map(v=>v>=0?C.green2:C.red2),borderWidth:1.5,borderRadius:4}]; }
+  if (datasets.length) S.charts.drill = new Chart(ctx, {type, data:{labels,datasets}, options:opts});
+}
+
+/* ═══ CHARTS ═══ */
+function mkLineOpts() { return {responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:C.text,font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.dataset.label+': '+peso(c.raw)}}},scales:{x:{grid:{display:false},ticks:{color:C.muted,font:{size:10}}},y:{grid:{color:'#f1f5f9'},ticks:{color:C.muted,font:{size:10},callback:v=>peso(v,true)}}}}; }
+function mkBarOpts()  { return {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:C.text,font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.dataset.label+': '+peso(c.raw)}}},scales:{x:{grid:{display:false},ticks:{color:C.muted,font:{size:10}}},y:{grid:{color:'#f1f5f9'},ticks:{color:C.muted,font:{size:10},callback:v=>peso(v,true)}}}}; }
+const dc = id => { if (S.charts[id]) { S.charts[id].destroy(); delete S.charts[id]; } };
+
+function renderTrend() {
+  const d = S.data.monthlyTrend; dc('chartTrend');
+  S.charts.chartTrend = new Chart(el('chartTrend'), {type:'line', data:{labels:MONTHS,datasets:[{label:'Net Sales',data:d.sales,borderColor:C.blue2,backgroundColor:C.blueA,fill:true,tension:.4,pointRadius:3,borderWidth:2},{label:'Gross Profit',data:d.grossProfit,borderColor:C.green2,backgroundColor:C.greenA,fill:true,tension:.4,pointRadius:3,borderWidth:2},{label:'Net Income',data:d.netIncome,borderColor:C.teal2,backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3]}]}, options:mkLineOpts()});
+}
+function renderDonut() {
+  const v = getVals(), gm = v.sales > 0 ? v.gp / v.sales : 0;
+  el('donutPct').textContent = (gm * 100).toFixed(1) + '%';
+  const fc = gm >= .3 ? C.green2 : gm >= .1 ? C.teal2 : C.orange2;
+  el('donutPct').style.color = fc;
+  dc('chartDonut');
+  S.charts.chartDonut = new Chart(el('chartDonut'), {type:'doughnut',data:{labels:['Gross Margin','COGS %'],datasets:[{data:[Math.max(0,gm*100),Math.max(0,(1-gm)*100)],backgroundColor:[fc,'#e2e8f0'],borderColor:['#fff','#fff'],borderWidth:3}]},options:{responsive:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+  el('donutLegend').innerHTML = [{dot:fc,n:'Gross Margin',v:pct(gm)},{dot:'#e2e8f0',n:'COGS Share',v:pct(1-gm)},{dot:C.teal2,n:'Net Income',v:peso(v.ni,true)}].map(r=>`<div class="dl-row"><span class="dl-dot" style="background:${r.dot}"></span><span class="dl-name">${r.n}</span><span class="dl-val">${r.v}</span></div>`).join('');
+}
+function renderISTable() {
+  const d = S.data.monthlyTrend;
+  const sec = l => `<tr style="background:var(--blue-bg)"><td colspan="${MONTHS.length+2}" style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);padding:7px 12px;">${l}</td></tr>`;
+  const row = (l,a,tot=false,neg=false) => `<tr${tot?' class="tot"':''}><td>${l}</td>${a.map(v=>`<td class="num${neg&&v>0?' amt-neg':''}">${peso(v)}</td>`).join('')}<td class="num${neg&&sum(a)>0?' amt-neg':''}">${peso(sum(a))}</td></tr>`;
+  el('isTable').innerHTML = '<thead><tr><th>DESCRIPTION</th>'+MONTHS.map(m=>`<th class="num">${m}</th>`).join('')+'<th class="num">YTD</th></tr></thead><tbody>'+sec('── Revenues')+row('Net Sales',d.sales)+sec('── Direct Costs (COGS)')+row('Total COGS',d.cogs,false,true)+row('Gross Profit',d.grossProfit,true)+sec('── Operating Expenses')+row('Total OpEx',d.opex,false,true)+row('Net Income (Before Tax)',d.netIncome,true)+'</tbody>';
+}
+function renderCOGSTable() {
+  if (!S.sum) return;
+  const sd = S.sum;
+  const items = [{l:'Materials',d:sd.cogs.materials},{l:'Office Supplies',d:sd.cogs.officeSuppliesDirect},{l:'Merchandise Sold',d:sd.cogs.merchandiseSold},{l:'Office Furniture',d:sd.cogs.officeFurniture},{l:'Commissions (Dir.)',d:sd.cogs.commissionsDir},{l:'Other Direct',d:sd.cogs.otherDirect}];
+  el('cogsTable').innerHTML = '<thead><tr><th>COGS ITEM</th>'+MONTHS.map(m=>`<th class="num">${m}</th>`).join('')+'<th class="num">YTD</th></tr></thead><tbody>'+items.map(it=>`<tr><td>${it.l}</td>${MONTHS.map(m=>`<td class="num amt-neg">${peso(it.d[m]||0)}</td>`).join('')}<td class="num amt-neg">${peso(it.d.YTD||0)}</td></tr>`).join('')+`<tr class="tot"><td>Total COGS</td>${MONTHS.map(m=>`<td class="num">${peso(sd.cogs.total[m]||0)}</td>`).join('')}<td class="num">${peso(sd.cogs.total.YTD||0)}</td></tr>`+`<tr class="tot"><td>Gross Profit</td>${MONTHS.map(m=>{const v=sd.grossProfit?.amount?.[m]||0;return`<td class="num ${v>=0?'vp':'vn'}">${peso(v)}</td>`;}).join('')}<td class="num">${peso(sd.grossProfit?.amount?.YTD||0)}</td></tr>`+'</tbody>';
+}
+function renderCompTable() {
+  if (!S.sum) return;
+  const sd = S.sum;
+  const items = [{l:'Salaries & Wages',d:sd.compensation.salariesWages},{l:'Allowances',d:sd.compensation.allowances},{l:'Overtime / Holidays',d:sd.compensation.overtime},{l:'13th Month / Bonus',d:sd.compensation.bonus13th},{l:'Statutory Benefits',d:sd.compensation.statutoryBen},{l:'Service Incentive',d:sd.compensation.sil}];
+  el('compTable').innerHTML = '<thead><tr><th>COMP ITEM</th>'+MONTHS.map(m=>`<th class="num">${m}</th>`).join('')+'<th class="num">YTD</th></tr></thead><tbody>'+items.map(it=>`<tr><td>${it.l}</td>${MONTHS.map(m=>`<td class="num">${peso(it.d[m]||0)}</td>`).join('')}<td class="num">${peso(it.d.YTD||0)}</td></tr>`).join('')+`<tr class="tot"><td>Total Compensation</td>${MONTHS.map(m=>`<td class="num">${peso(sd.compensation.total[m]||0)}</td>`).join('')}<td class="num">${peso(sd.compensation.total.YTD||0)}</td></tr>`+'</tbody>';
+}
+function renderCOGSTrend() {
+  const d = S.data.monthlyTrend; dc('cogsTrend');
+  S.charts.cogsTrend = new Chart(el('cogsTrend'), {type:'bar',data:{labels:MONTHS,datasets:[{label:'COGS',data:d.cogs,backgroundColor:C.orangeA,borderColor:C.orange2,borderWidth:1.5,borderRadius:5},{label:'Gross Profit',data:d.grossProfit,type:'line',borderColor:C.green2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2}]},options:mkBarOpts()});
+}
+function renderCOGSGP() {
+  const d = S.data.monthlyTrend; dc('cogsGP');
+  const gms = d.sales.map((s,i) => s > 0 ? +(d.grossProfit[i]/s*100).toFixed(1) : 0);
+  const opts = mkLineOpts(); opts.scales.y.ticks.callback = v => v+'%'; opts.plugins.tooltip.callbacks.label = c => ' '+c.dataset.label+': '+c.raw+'%';
+  S.charts.cogsGP = new Chart(el('cogsGP'), {type:'line',data:{labels:MONTHS,datasets:[{label:'Gross Margin %',data:gms,borderColor:C.green2,backgroundColor:C.greenA,fill:true,tension:.4,pointRadius:4,borderWidth:2}]},options:opts});
+}
+function renderOpExTrend() {
+  const d = S.data.monthlyTrend; dc('opexTrend');
+  S.charts.opexTrend = new Chart(el('opexTrend'), {type:'bar',data:{labels:MONTHS,datasets:[{label:'Total OpEx',data:d.opex,backgroundColor:C.orangeA,borderColor:C.orange2,borderWidth:1.5,borderRadius:5},{label:'Net Sales',data:d.sales,type:'line',borderColor:C.blue2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2}]},options:mkBarOpts()});
+}
+function renderCompTrend() {
+  const d = S.data.monthlyTrend; dc('compTrend');
+  const comp = S.sum ? MONTHS.map(m => S.sum.compensation.total[m] || 0) : d.opex;
+  S.charts.compTrend = new Chart(el('compTrend'), {type:'line',data:{labels:MONTHS,datasets:[{label:'Compensation',data:comp,borderColor:C.blue2,backgroundColor:C.blueA,fill:true,tension:.4,pointRadius:3,borderWidth:2},{label:'Total OpEx',data:d.opex,borderColor:C.orange2,backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:2,borderDash:[4,3]}]},options:mkLineOpts()});
+}
+
+/* ═══ BONUS ═══ */
+function renderBonus() {
+  const sd = S.sum, d = S.data; if (!sd && !d) return;
+  const mt = parseFloat(el('bonusInput')?.value || 50000) || 50000;
+  const at = mt * 12;
+  el('bhYear').textContent = S.year;
+  el('bhMonthly').textContent = peso(mt);
+
+  const rows = MONTHS.map((m,i) => {
+    const prog = sd ? (sd.opex.totalCommissions[m]||0) : (d.monthlyTrend.opex[i]*0.05);
+    const ni   = sd ? (sd.netIncome?.afterTax?.[m]||0) : (d.monthlyTrend.netIncome[i]||0);
+    const pa   = mt > 0 ? prog/mt : 0;
+    return {m, target:mt, prog, var:prog-mt, pa, met:pa>=1, ni};
+  });
+
+  const tp = rows.reduce((s,r)=>s+r.prog,0);
+  const tni = rows.reduce((s,r)=>s+r.ni,0);
+  const ap = at > 0 ? tp/at : 0;
+  const metC = rows.filter(r=>r.met).length;
+
+  el('bhPct').innerHTML = (ap*100).toFixed(1)+'<span>%</span>';
+  el('bhBar').style.width = Math.min(ap*100,100).toFixed(1)+'%';
+  el('bhProgress').textContent = peso(tp);
+  el('bhTarget').textContent = peso(at);
+  const rem = at - tp;
+  el('bhRemaining').textContent = rem > 0 ? peso(rem) : '✅ Exceeded!';
+  el('bhMet').textContent = metC;
+  el('bhMiss').textContent = 12 - metC;
+
+  const thead = `<thead><tr><th>MONTH</th><th class="num">TARGET</th><th class="num">PROGRESS</th><th class="num">VARIANCE</th><th>BATTERY LEVEL</th><th class="num">% ACHIEVED</th><th class="num">NET INCOME</th><th>STATUS</th></tr></thead>`;
+  const tbody = rows.map(r => {
+    const cap = Math.min(r.pa*100,100).toFixed(1);
+    const bc  = r.pa>=1?'hi':r.pa>=.5?'med':'low';
+    const batt = r.met
+      ? `<div class="batt-wrap"><div class="batt-track" style="flex:1"><div class="batt-fill hi" style="width:100%"></div></div><span class="batt-met">🏆 MET</span></div>`
+      : `<div class="batt-wrap"><div class="batt-track"><div class="batt-fill ${bc}" style="width:${cap}%"></div></div><span class="batt-lbl">${(r.pa*100).toFixed(1)}%</span></div>`;
+    const niS = r.ni>=0?'<span class="spill profit">✅ Profit</span>':'<span class="spill loss">🔴 Loss</span>';
+    return `<tr><td style="font-weight:600">${r.m}</td><td class="num">${peso(r.target)}</td><td class="num" style="font-weight:600">${peso(r.prog)}</td><td class="num ${r.var>=0?'vp':'vn'}">${r.var>=0?'+':''}${peso(r.var)}</td><td>${batt}</td><td class="num" style="font-weight:700">${(r.pa*100).toFixed(1)}%</td><td class="num ${r.ni>=0?'vp':'vn'}">${peso(r.ni)}</td><td>${niS}</td></tr>`;
+  }).join('');
+  const aB = `<div class="batt-wrap"><div class="batt-track"><div class="batt-fill hi" style="width:${Math.min(ap*100,100).toFixed(1)}%"></div></div><span class="batt-lbl">${(ap*100).toFixed(1)}%</span></div>`;
+  el('bonusTable').innerHTML = thead+'<tbody>'+tbody+`<tr class="tot"><td>ANNUAL TOTAL</td><td class="num">${peso(at)}</td><td class="num">${peso(tp)}</td><td class="num">${ap>=1?'+':''}${peso(tp-at)}</td><td>${aB}</td><td class="num">${(ap*100).toFixed(1)}%</td><td class="num">${peso(tni)}</td><td style="font-size:11px;color:rgba(255,255,255,.7);font-family:var(--font)">${metC}/12 months met</td></tr>`+'</tbody>';
+}
+
+/* CLOCK */
+setInterval(()=>{ el('clockEl').textContent=new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); },1000);
+
+/* YEAR SELECT */
+(()=>{
+  const sel = el('selYear');
+  for (let y=2025;y<=2030;y++){const o=document.createElement('option');o.value=y;o.textContent=y;sel.appendChild(o);}
+  sel.value='2025';
 })();
+
+/* AUTO REFRESH */
+let cd=30,timer=null;
+function startCD(){ clearInterval(timer); cd=30; timer=setInterval(()=>{cd--;if(cd<=0){fetchData();cd=30;}},1000); }
+
+fetchData();
+startCD();
 </script>
 </body>
 </html>
