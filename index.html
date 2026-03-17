@@ -505,30 +505,51 @@ function openDrill(id) {
   };
   const c = cfg[id];
 
+  // Define available tabs per card
+  const tabDefs = {
+    sales: [{k:'chart',l:'📊 Chart'},{k:'table',l:'📋 Table'}],
+    gp:    [{k:'chart',l:'📊 Chart'},{k:'table',l:'📋 Table'}],
+    opex:  [{k:'chart',l:'📊 Chart'},{k:'table',l:'📋 Table'}],
+    ni:    [{k:'chart',l:'📊 Chart'},{k:'table',l:'📋 Table'}],
+    bonus: []
+  };
+
+  if (!S.drillTab[id]) S.drillTab[id] = 'chart';
+  const tab = S.drillTab[id];
+
+  const tabHtml = (tabDefs[id]||[]).map(t =>
+    `<button class="dtab${tab===t.k?' active':''}" onclick="setDrillTab('${id}','${t.k}')">${t.l}</button>`
+  ).join('');
+
   const panel = el('drillPanel');
   panel.style.display = 'block';
   panel.className = 'drill-panel ' + c.cls;
 
-  const bodyContent = id === 'bonus'
-    ? `<div class="drill-body">
-        <div class="drill-stats">${buildStats(id)}</div>
-        ${buildDrillTable(id)}
-       </div>`
-    : `<div class="drill-body">
-        <div class="drill-stats">${buildStats(id)}</div>
-        <div class="drill-viz">${buildViz(id)}</div>
-        <div class="drill-tbl-label">Monthly Breakdown</div>
-        ${buildDrillTable(id)}
-       </div>`;
+  let innerContent = '';
+  if (id === 'bonus') {
+    innerContent = `<div class="drill-stats">${buildStats(id)}</div>${buildDrillTable(id)}`;
+  } else if (tab === 'table') {
+    innerContent = `<div class="drill-stats">${buildStats(id)}</div>
+      <div class="drill-tabs">${tabHtml}</div>
+      <div class="drill-tbl-label">Monthly Breakdown</div>
+      ${buildDrillTable(id)}`;
+  } else {
+    innerContent = `<div class="drill-stats">${buildStats(id)}</div>
+      <div class="drill-tabs">${tabHtml}</div>
+      <div class="drill-viz">${buildViz(id)}</div>`;
+  }
 
   panel.innerHTML = `
     <div class="drill-header">
       <div class="drill-header-left"><h3>${c.title}</h3><p>${c.sub} · ${plbl()} ${S.year}</p></div>
       <button class="drill-close" onclick="toggleDrill('${id}')">✕</button>
     </div>
-    ${bodyContent}`;
+    <div class="drill-body">${innerContent}</div>`;
 
-  setTimeout(() => { if (id !== 'bonus') initDrillChart(id); panel.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 60);
+  setTimeout(() => {
+    if (id !== 'bonus' && tab === 'chart') initDrillChart(id);
+    panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }, 60);
 }
 function setDrillTab(id, tab) { S.drillTab[id] = tab; openDrill(id); }
 
