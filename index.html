@@ -181,7 +181,11 @@ body{font-family:var(--font);background:var(--gray100);color:var(--gray900);font
 .tbl-wrap{background:var(--white);border:1.5px solid var(--gray200);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:20px;}
 .tbl-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--gray200);}
 .tbl-head h3{font-size:13px;font-weight:700;color:var(--gray900);}
-.tbl-scroll{overflow-x:auto;}
+.tbl-scroll{overflow-x:scroll;overflow-y:visible;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--blue2) var(--gray100);}
+.tbl-scroll::-webkit-scrollbar{height:10px;}
+.tbl-scroll::-webkit-scrollbar-track{background:var(--gray100);border-top:1px solid var(--gray200);border-radius:0 0 var(--radius) var(--radius);}
+.tbl-scroll::-webkit-scrollbar-thumb{background:var(--blue2);border-radius:5px;border:2px solid var(--gray100);}
+.tbl-scroll::-webkit-scrollbar-thumb:hover{background:var(--blue);}
 
 .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
 @media(max-width:800px){.chart-grid{grid-template-columns:1fr;}}
