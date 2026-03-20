@@ -1279,13 +1279,14 @@ function setOpexSubTab(tab){S.opexSubTab=tab; if(S.activeDrill==='opex') openDri
 function buildOpexSubContent(){
   if(!S.opexSubTab) S.opexSubTab='chart';
   if(S.opexSubTab==='table') return buildOpexSubTable();
+  const fullWidth = S.opexSub === 'comp';
+  if(fullWidth) return `<div style="width:100%"><div class="tva-chart-wrap"><canvas id="opexSubCanvas"></canvas></div></div>`;
   return `<div class="drill-viz-row"><div class="tva-chart-wrap"><canvas id="opexSubCanvas"></canvas></div>${buildOpexSubBars()}</div>`;
 }
 function buildOpexSubBars(){
   const sub=S.opexSub; let items=[];
   if(sub==='comp'){
-    const cd=getCompD()||{};
-    items=[{l:'Salaries & Wages',v:cd.sal,c:C.comp[0]},{l:'Allowances',v:cd.all,c:C.comp[1]},{l:'OT / Holidays',v:cd.ot,c:C.comp[2]},{l:'13th Month',v:cd.b13,c:C.comp[3]},{l:'Statutory Ben.',v:cd.stat,c:C.comp[4]},{l:'Service Inc.',v:cd.sil,c:C.comp[5]}].sort((a,b)=>b.v-a.v);
+    return '';
   } else if(sub==='ga'){
     const ga=getGADetail()||{};
     items=Object.entries(ga).map(([k,v])=>({l:gaLabel(k),v,c:gaColor(k)})).filter(i=>i.v>0).sort((a,b)=>b.v-a.v).slice(0,8);
@@ -1324,12 +1325,7 @@ function buildViz(id){
     return `<div class="drill-viz-row">${chartHtml}<div class="drill-viz-bars"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:10px;">Ranked by Cost</div>${bars}</div></div>`;
   }
   if(id==='ga'){
-    const ga=getGADetail();
-    if(!ga) return `<div style="width:100%">${chartHtml}</div>`;
-    const items=Object.entries(ga).map(([k,v])=>({l:gaLabel(k),v,c:gaColor(k)})).filter(i=>i.v>0).sort((a,b)=>b.v-a.v).slice(0,10);
-    const max=Math.max(...items.map(i=>i.v),1),tot=items.reduce((s,i)=>s+i.v,0)||1;
-    const bars=items.map(it=>`<div class="mb"><div class="mb-top"><span class="mb-name"><span class="mb-dot" style="background:${it.c}"></span>${it.l}</span><span class="mb-val">${peso(it.v,true)} <span style="color:#94a3b8;font-size:10px">${(it.v/tot*100).toFixed(0)}%</span></span></div><div class="mb-track"><div class="mb-fill" style="width:${(it.v/max*100).toFixed(1)}%;background:${it.c}"></div></div></div>`).join('');
-    return `<div class="drill-viz-row">${chartHtml}<div class="drill-viz-bars"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:10px;">Top G&A Items</div>${bars}</div></div>`;
+    return `<div style="width:100%">${chartHtml}</div>`;
   }
   return `<div style="width:100%">${chartHtml}</div>`;
 }
@@ -1384,9 +1380,24 @@ function initDrillChart(id){
   }
   if(id==='ga'){
     const sd=S.sum;
-    const gaMonthly=sd?MONTHS.map(m=>sd.opex.gaExpenses[m]||0):S.data.monthlyTrend.opex.map(v=>v*.4);
-    const opts=barOpts(); opts.interaction={mode:'index',intersect:false};
-    S.charts.drill=new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[{label:'G&A Expenses',data:gaMonthly,backgroundColor:'rgba(79,70,229,.22)',borderColor:'#4f46e5',borderWidth:2,borderRadius:6,order:2},{label:'Total OpEx',data:S.data.monthlyTrend.opex,type:'line',borderColor:C.orange2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3],order:1}]},options:opts}); return;
+    // Build pie from gaDetail line items (falls back to single total slice if no detail)
+    let labels, data, bgColors;
+    if(sd && sd.gaDetail){
+      const m=S.month, isAll=m==='all';
+      const items=Object.entries(sd.gaDetail)
+        .filter(([k])=>k!=='total')
+        .map(([k,obj])=>({l:gaLabel(k),v:isAll?(obj.YTD||0):(obj[m]||0),c:gaColor(k)}))
+        .filter(i=>i.v>0)
+        .sort((a,b)=>b.v-a.v);
+      labels   = items.map(i=>i.l);
+      data     = items.map(i=>i.v);
+      bgColors = items.map(i=>i.c);
+    } else {
+      const gaMonthly=MONTHS.map(m=>sd?(sd.opex.gaExpenses[m]||0):0);
+      labels=['G&A Total']; data=[gaMonthly.reduce((s,v)=>s+v,0)]; bgColors=['#4f46e5'];
+    }
+    S.charts.drill=new Chart(ctx,{type:'pie',data:{labels,datasets:[{data,backgroundColor:bgColors,borderColor:'#fff',borderWidth:2,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:C.text,font:{size:11},boxWidth:12,padding:10,generateLabels:chart=>{const ds=chart.data.datasets[0];const tot=ds.data.reduce((s,v)=>s+v,0)||1;return chart.data.labels.map((lbl,i)=>({text:`${lbl}  ${(ds.data[i]/tot*100).toFixed(1)}%`,fillStyle:ds.backgroundColor[i],strokeStyle:'#fff',lineWidth:1,hidden:false,index:i}));}}},tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,callbacks:{label:c=>` ${c.label}: ${peso(c.raw)} (${((c.raw/(c.dataset.data.reduce((s,v)=>s+v,0)||1))*100).toFixed(1)}%)`}}}}});
+    return;
   }
 }
 /* ═══ G&A HELPERS ═══ */
@@ -1416,11 +1427,18 @@ function initOpexSubChart(sub){
   const sd=S.sum,d=S.data.monthlyTrend,opts=mkBarOpts();
   opts.interaction={mode:'index',intersect:false};
   if(sub==='comp'){
-    const compData=sd?MONTHS.map(m=>sd.compensation.total[m]||0):d.opex.map(v=>v*0.36);
-    S.charts.opexSub=new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
-      {label:'Compensation',data:compData,backgroundColor:'rgba(29,78,216,.2)',borderColor:C.blue,borderWidth:2,borderRadius:5},
-      {label:'Total OpEx',data:d.opex,type:'line',borderColor:C.orange2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3]}
-    ]},options:opts});
+    const m=S.month, isAll=m==='all';
+    const g=o=>sd?(isAll?(o.YTD||0):(o[m]||0)):0;
+    const items=[
+      {l:'Salaries & Wages', v:sd?g(sd.compensation.salariesWages):0,  c:C.comp[0]},
+      {l:'Allowances',       v:sd?g(sd.compensation.allowances):0,      c:C.comp[1]},
+      {l:'OT / Holidays',   v:sd?g(sd.compensation.overtime):0,        c:C.comp[2]},
+      {l:'13th Month',      v:sd?g(sd.compensation.bonus13th):0,        c:C.comp[3]},
+      {l:'Statutory Ben.',  v:sd?g(sd.compensation.statutoryBen):0,     c:C.comp[4]},
+      {l:'Service Inc.',    v:sd?g(sd.compensation.sil):0,              c:C.comp[5]}
+    ].filter(i=>i.v>0);
+    const labels=items.map(i=>i.l), data=items.map(i=>i.v), bgColors=items.map(i=>i.c);
+    S.charts.opexSub=new Chart(ctx,{type:'pie',data:{labels,datasets:[{data,backgroundColor:bgColors,borderColor:'#fff',borderWidth:2,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:C.text,font:{size:11},boxWidth:12,padding:10,generateLabels:chart=>{const ds=chart.data.datasets[0];const tot=ds.data.reduce((s,v)=>s+v,0)||1;return chart.data.labels.map((lbl,i)=>({text:`${lbl}  ${(ds.data[i]/tot*100).toFixed(1)}%`,fillStyle:ds.backgroundColor[i],strokeStyle:'#fff',lineWidth:1,hidden:false,index:i}));}}},tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,callbacks:{label:c=>` ${c.label}: ${peso(c.raw)} (${((c.raw/(c.dataset.data.reduce((s,v)=>s+v,0)||1))*100).toFixed(1)}%)`}}}}});
   } else if(sub==='ga'){
     const gaData=sd?MONTHS.map(m=>sd.opex.gaExpenses[m]||0):d.opex.map(v=>v*0.4);
     S.charts.opexSub=new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[
