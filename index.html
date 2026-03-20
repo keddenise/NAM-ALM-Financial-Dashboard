@@ -352,7 +352,7 @@ const APIS = {
 };
 // Target vs Actual APIs (separate sheet/deployment per company)
 const APIS_TVA = {
-  trading:  'https://script.google.com/macros/s/AKfycbzyXOJyuauCcyWSlhz211fzehjBM4upQXlJNMDyPPnGOqEbUw8VAU1cGPoYMjEFAycv/exec',  // TODO: add when ready
+  trading:  null,  // TODO: add when ready
   builders: 'https://script.google.com/macros/s/AKfycbz1hMWJYgj_C6eNxCMwmDWv-eaP7PV2MSEdUHxm2XSrORWPNP03wGLW4fq4rvB1Mf7l/exec',
   alm:      null   // TODO: add when ready
 };
@@ -857,7 +857,55 @@ function buildTvaSubContent() {
   return `<div class="drill-viz-row"><div class="drill-chart"><canvas id="tvaSubCanvas"></canvas></div>${buildTvaSubBars()}</div>`;
 }
 
-function buildTvaSubBars() {
+// ── TVA revenue schema — adapts to company ──────────────────
+  // Different companies have different revenue line item names.
+  // Returns array of { l (label), key (field name in tva.revenue), c (color) }
+  function getTvaRevSchema() {
+    const co = S.company;
+    if (co === 'trading') {
+      return [
+        { l:'Sales Revenue / Net Sales',  key:'salesRevenue',  c:C.indigo  },
+        { l:'Other Operating Income',      key:'otherOpIncome', c:C.blue2   },
+        { l:'Other Income',               key:'otherIncome',   c:C.teal2   }
+      ];
+    }
+    // builders (default)
+    return [
+      { l:'Contract Net Fee / Service Revenue', key:'contractRevenue', c:C.indigo },
+      { l:'Repair Income / Other Operating',    key:'repairIncome',    c:C.blue2  },
+      { l:'Other Income',                        key:'otherIncome',     c:C.teal2  }
+    ];
+  }
+
+  // ── TVA expense schema — adapts to company ──────────────────
+  function getTvaExpSchema() {
+    const co = S.company;
+    if (co === 'trading') {
+      return [
+        { l:'Salaries & Wages',       k:'salariesWages',    c:C.orange2  },
+        { l:'Interest on Loan',       k:'interestLoan',     c:C.red2     },
+        { l:'Transportation',         k:'transportation',   c:C.blue2    },
+        { l:'Materials',              k:'materials',        c:'#8b5cf6'  },
+        { l:'Car Rental Fee',         k:'carRental',        c:C.green2   },
+        { l:'Amortization',           k:'amortization',     c:'#f59e0b'  },
+        { l:'Taxes & Licenses',       k:'taxesLicenses',    c:C.teal2    },
+        { l:'Other Direct Costs',     k:'otherDirect',      c:'#ec4899'  }
+      ];
+    }
+    // builders (default)
+    return [
+      { l:'Salaries & Wages',     k:'salariesWages',    c:C.orange2  },
+      { l:'Interest on Loan',     k:'interestLoan',     c:C.red2     },
+      { l:'Transportation',       k:'transportation',   c:C.blue2    },
+      { l:'Amort. Office Equip',  k:'amortOfficeEquip', c:'#8b5cf6'  },
+      { l:'Taxes & Licenses',     k:'taxesLicenses',    c:C.teal2    },
+      { l:'Car Rental — KIA',     k:'carRentalKia',     c:C.green2   },
+      { l:'Office Rental',        k:'officeRental',     c:'#f59e0b'  },
+      { l:'Meals',                k:'meals',            c:'#ec4899'  }
+    ];
+  }
+
+  function buildTvaSubBars() {
   if (!S.tva) return '';
   const sub = S.tvaSub, tva = S.tva;
   const m = S.month, isYTD = m === 'all';
@@ -870,25 +918,15 @@ function buildTvaSubBars() {
   if (sub === 'revenue') {
     title = `Revenue Line Items · ${lbl}`;
     const rev = tva.revenue;
-    items = [
-      { l:'Contract Revenue', v:getA(rev.contractRevenue), t:getT(rev.contractRevenue), c:C.indigo },
-      { l:'Repair / Other',   v:getA(rev.repairIncome),    t:getT(rev.repairIncome),    c:C.blue2  },
-      { l:'Other Income',     v:getA(rev.otherIncome),     t:getT(rev.otherIncome),     c:C.teal2  }
-    ].filter(i => i.t > 0 || i.v > 0);
+    const revSchema = getTvaRevSchema();
+    items = revSchema
+      .map(s => ({ l:s.l, v:rev[s.key]?getA(rev[s.key]):0, t:rev[s.key]?getT(rev[s.key]):0, c:s.c }))
+      .filter(i => i.t > 0 || i.v > 0);
 
   } else if (sub === 'expenses') {
     title = `Top Expenses vs Target · ${lbl}`;
     const exp = tva.expenses;
-    const eMap = [
-      { l:'Salaries & Wages',     k:'salariesWages',    c:C.orange2  },
-      { l:'Interest on Loan',     k:'interestLoan',     c:C.red2     },
-      { l:'Transportation',       k:'transportation',   c:C.blue2    },
-      { l:'Amort. Office Equip',  k:'amortOfficeEquip', c:'#8b5cf6'  },
-      { l:'Taxes & Licenses',     k:'taxesLicenses',    c:C.teal2    },
-      { l:'Car Rental — KIA',     k:'carRentalKia',     c:C.green2   },
-      { l:'Office Rental',        k:'officeRental',     c:'#f59e0b'  },
-      { l:'Meals',                k:'meals',            c:'#ec4899'  }
-    ];
+    const eMap = getTvaExpSchema();
     items = eMap
       .map(i => ({ l:i.l, v:exp[i.k]?getA(exp[i.k]):0, t:exp[i.k]?getT(exp[i.k]):0, c:i.c }))
       .filter(i => i.t > 0 || i.v > 0)
@@ -957,20 +995,17 @@ function buildTvaSubTable() {
 
   if (sub === 'revenue') {
     const rev = tva.revenue;
-    const items = [
-      { l:'Contract Net Fee / Service Revenue', d:rev.contractRevenue },
-      { l:'Repair Income / Other Operating',    d:rev.repairIncome    },
-      { l:'Other Income',                        d:rev.otherIncome     }
-    ];
+    // Build items from company-aware schema
+    const revSchema = getTvaRevSchema();
+    const items = revSchema.map(s => ({ l:s.l, d:rev[s.key] || null })).filter(it => it.d);
     const totItem = { l:'TOTAL REVENUE', d:rev.total, isTot:true };
-    // Show all 12 months when YTD, or single month column when filtered
     if (isYTD) {
       return wrap('<table class="data-table">' + H(['DESCRIPTION','MONTHLY TARGET',...MONTHS,'YTD ACTUAL','YTD VARIANCE','%','✓']) +
         '<tbody>' + [...items, totItem].map(it => {
           if (!it.d) return '';
           const {a,t,v} = rowVals(it.d);
           const achP = t !== 0 ? ((a/t)*100).toFixed(1)+'%' : '—';
-          const mCells = MONTHS.map(mo => `<td class="num">${peso(it.d.monthly[mo].actual)}</td>`).join('');
+          const mCells = MONTHS.map(mo => `<td class="num">${peso(it.d.monthly[mo]?it.d.monthly[mo].actual:0)}</td>`).join('');
           return `<tr${it.isTot?' class="tot"':''}><td>${it.l}</td><td class="num">${peso(it.d.monthlyTarget)}</td>${mCells}<td class="num" style="font-weight:600">${peso(a)}</td><td class="num ${v>=0?'vp':'vn'}">${v>=0?'+':''}${peso(v)}</td><td class="num">${achP}</td><td class="num">${statusBadge(a,t,false)}</td></tr>`;
         }).join('') + '</tbody></table>');
     } else {
@@ -986,22 +1021,31 @@ function buildTvaSubTable() {
 
   if (sub === 'expenses') {
     const exp = tva.expenses;
-    const items = [
-      { l:'Salaries & Wages (incl. Benefits)', d:exp.salariesWages    },
-      { l:'Postage & Telecom',                  d:exp.postage          },
-      { l:'Office Rental Fee',                  d:exp.officeRental     },
-      { l:'Car Rental Fee — KIA',               d:exp.carRentalKia     },
-      { l:'Meals & Refreshments',               d:exp.meals            },
-      { l:'Professional & Consultant Fee',      d:exp.professional     },
-      { l:'Transportation (Indirect)',           d:exp.transportation   },
-      { l:'Interest on Loan Payable',           d:exp.interestLoan     },
-      { l:'Miscellaneous Expense',              d:exp.miscellaneous    },
-      { l:'Taxes, Licenses & Permits',          d:exp.taxesLicenses    },
-      { l:'Amort. — Marketing Expenses',        d:exp.amortMarketing   },
-      { l:'Amort. — Office Equipment',          d:exp.amortOfficeEquip },
-      { l:'Amort. — Motorcycle Maintenance',    d:exp.amortMotorcycle  },
-      { l:'Amort. — Trainings & Seminars',      d:exp.amortTrainings   }
-    ];
+    // Use company-aware schema for display labels and keys
+    const expSchema = getTvaExpSchema();
+    // For full table, show ALL expense items that exist in the data
+    const allExpKeys = Object.keys(exp).filter(k => k !== 'total');
+    const allExpLabels = {
+      // Builders
+      salariesWages:'Salaries & Wages', postage:'Postage & Telecom',
+      officeRental:'Office Rental Fee', carRentalKia:'Car Rental Fee — KIA',
+      meals:'Meals & Refreshments', professional:'Professional & Consultant Fee',
+      transportation:'Transportation', interestLoan:'Interest on Loan Payable',
+      miscellaneous:'Miscellaneous Expense', taxesLicenses:'Taxes, Licenses & Permits',
+      amortMarketing:'Amort. — Marketing', amortOfficeEquip:'Amort. — Office Equip.',
+      amortMotorcycle:'Amort. — Motorcycle', amortTrainings:'Amort. — Trainings',
+      // Trading extras
+      materials:'Materials', officeSuppliesDirect:'Office Supplies (Direct)',
+      officeFurniture:'Office Furniture & Fixtures', otherDirect:'Other Direct Costs',
+      commissionsDir:'Commissions – Direct', officeSupplies:'Office Supplies',
+      pantrySupplies:'Pantry Supplies', carRental:'Car Rental Fee',
+      electricWater:'Electric, Water & Insurance', staffHouse:'Staff House',
+      thanksgivingMass:'Thanksgiving Mass', waterRefill:'Water Refill',
+      professionalFee:'Professional Fee', amortization:'Amortization'
+    };
+    const items = allExpKeys
+      .map(k => ({ l:allExpLabels[k]||k, d:exp[k] }))
+      .filter(it => it.d && (it.d.annualTarget !== 0 || it.d.annualActual !== 0 || it.d.ytd.actual !== 0));
     const totItem = { l:'TOTAL EXPENSES', d:exp.total, isTot:true };
     if (isYTD) {
       return wrap('<table class="data-table">' + H(['DESCRIPTION','MONTHLY TARGET',...MONTHS,'YTD ACTUAL','YTD VARIANCE','%','✓']) +
@@ -1009,7 +1053,7 @@ function buildTvaSubTable() {
           if (!it.d) return '';
           const {a,t,v} = rowVals(it.d);
           const achP = t !== 0 ? ((a/t)*100).toFixed(1)+'%' : '—';
-          const mCells = MONTHS.map(mo => `<td class="num">${peso(it.d.monthly[mo].actual)}</td>`).join('');
+          const mCells = MONTHS.map(mo => `<td class="num">${peso(it.d.monthly[mo]?it.d.monthly[mo].actual:0)}</td>`).join('');
           return `<tr${it.isTot?' class="tot"':''}><td>${it.l}</td><td class="num">${peso(it.d.monthlyTarget)}</td>${mCells}<td class="num" style="font-weight:600">${peso(a)}</td><td class="num ${v>0?'vn':'vp'}">${v>=0?'+':''}${peso(v)}</td><td class="num">${achP}</td><td class="num">${statusBadge(a,t,true)}</td></tr>`;
         }).join('') + '</tbody></table>');
     } else {
@@ -1115,11 +1159,10 @@ function initTvaSubChart(sub) {
     const getT = (row) => row.monthly[m] ? row.monthly[m].target : 0;
 
     if (sub === 'revenue') {
+      const revSchema = getTvaRevSchema();
       const rows = [
-        { l:'Contract Revenue', d:rev.contractRevenue },
-        { l:'Repair / Other',   d:rev.repairIncome    },
-        { l:'Other Income',     d:rev.otherIncome     },
-        { l:'TOTAL',            d:rev.total           }
+        ...revSchema.map(s => ({ l:s.l, d:rev[s.key]||null })).filter(r=>r.d),
+        { l:'TOTAL', d:rev.total }
       ].filter(r => r.d && (getT(r.d)!==0||getA(r.d)!==0));
       S.charts.tvaSub = new Chart(ctx, {type:'bar', data:{
         labels: rows.map(r=>r.l),
@@ -1130,14 +1173,8 @@ function initTvaSubChart(sub) {
 
     } else if (sub === 'expenses') {
       const eMap = [
-        { l:'Salaries & Wages', k:'salariesWages'    },
-        { l:'Interest on Loan', k:'interestLoan'     },
-        { l:'Transportation',   k:'transportation'   },
-        { l:'Taxes & Licenses', k:'taxesLicenses'    },
-        { l:'Office Equip.',    k:'amortOfficeEquip' },
-        { l:'Car Rental — KIA', k:'carRentalKia'     },
-        { l:'Office Rental',    k:'officeRental'     },
-        { l:'TOTAL',            k:'total'            }
+        ...getTvaExpSchema(),
+        { l:'TOTAL', k:'total' }
       ].map(r => ({l:r.l, d:exp[r.k]})).filter(r=>r.d&&(getT(r.d)!==0||getA(r.d)!==0));
       const acts = eMap.map(r=>getA(r.d));
       S.charts.tvaSub = new Chart(ctx, {type:'bar', data:{
