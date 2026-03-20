@@ -159,9 +159,8 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
 @media(max-width:700px){.drill-viz-row{grid-template-columns:1fr;}}
 .drill-viz-bars{display:flex;flex-direction:column;gap:10px;padding-top:4px;}
 .drill-tbl-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#94a3b8;margin-bottom:10px;}
-/* ── TVA CHART CONTAINER — explicit height so Chart.js can measure ── */
-.tva-chart-wrap{position:relative;width:100%;height:380px;}
-.tva-chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+/* ── CHART CONTAINER — explicit height so Chart.js can always measure ── */
+.tva-chart-wrap{position:relative;width:100%;height:380px;display:block;}
 /* ── TVA MONTH ACHIEVEMENT PILLS ── */
 .tva-month-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px;}
 .tva-month-pill{border-radius:8px;padding:8px 6px;text-align:center;border:1.5px solid var(--gray200);background:#fff;}
@@ -728,7 +727,7 @@ function openDrill(id) {
     else if (id === 'opex')         initOpexSubChart(S.opexSub);
     else if (id !== 'bonus' && tab === 'chart') initDrillChart(id);
     panel.scrollIntoView({behavior:'smooth', block:'nearest'});
-  }, 200);
+  }, 350);
 }
 
 function setDrillTab(id, tab) { S.drillTab[id] = tab; openDrill(id); }
@@ -1098,6 +1097,8 @@ function initTvaSubChart(sub) {
   if (!ctx || !S.tva) return;
 
   if (S.charts.tvaSub) { S.charts.tvaSub.destroy(); delete S.charts.tvaSub; }
+  const wrap=ctx.parentElement;
+  if(wrap){const h=wrap.offsetHeight>0?wrap.offsetHeight:380;ctx.style.width='100%';ctx.style.height=h+'px';}
 
   const tva = S.tva;
   const m   = S.month, isYTD = m === 'all';
@@ -1410,6 +1411,8 @@ function buildGATable(){
 function initOpexSubChart(sub){
   const ctx=el('opexSubCanvas'); if(!ctx) return;
   if(S.charts.opexSub){S.charts.opexSub.destroy();delete S.charts.opexSub;}
+  const wrap=ctx.parentElement;
+  if(wrap){const h=wrap.offsetHeight>0?wrap.offsetHeight:380;ctx.style.width='100%';ctx.style.height=h+'px';}
   const sd=S.sum,d=S.data.monthlyTrend,opts=mkBarOpts();
   opts.interaction={mode:'index',intersect:false};
   if(sub==='comp'){
