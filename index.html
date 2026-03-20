@@ -100,7 +100,6 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
 .opex-sub-card.sc-comp.active{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.12),0 4px 10px rgba(0,0,0,.08);}
 .opex-sub-card.sc-ga.active{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12),0 4px 10px rgba(0,0,0,.08);}
 .opex-sub-card.sc-comm.active{border-color:var(--orange);box-shadow:0 0 0 3px rgba(194,65,12,.12),0 4px 10px rgba(0,0,0,.08);}
-/* TVA sub-card active states */
 .opex-sub-card.sc-tva-rev.active{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12),0 4px 10px rgba(0,0,0,.08);}
 .opex-sub-card.sc-tva-exp.active{border-color:var(--orange);box-shadow:0 0 0 3px rgba(194,65,12,.12),0 4px 10px rgba(0,0,0,.08);}
 .opex-sub-card.sc-tva-ni.active{border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,116,144,.12),0 4px 10px rgba(0,0,0,.08);}
@@ -118,7 +117,6 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
 .sc-tva-rev.active .sc-label{color:#4f46e5;} .sc-tva-exp.active .sc-label{color:var(--orange);}
 .sc-tva-ni.active .sc-label{color:var(--teal);}
 .opex-content-area{min-height:200px;}
-/* TVA Achievement badge inside sub-card */
 .sc-ach{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:6px;}
 .sc-ach.good{background:var(--green-bg);color:var(--green);}
 .sc-ach.warn{background:var(--orange-bg);color:var(--orange);}
@@ -161,6 +159,9 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
 @media(max-width:700px){.drill-viz-row{grid-template-columns:1fr;}}
 .drill-viz-bars{display:flex;flex-direction:column;gap:10px;padding-top:4px;}
 .drill-tbl-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#94a3b8;margin-bottom:10px;}
+/* ── TVA CHART CONTAINER — explicit height so Chart.js can measure ── */
+.tva-chart-wrap{position:relative;width:100%;height:380px;}
+.tva-chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
 /* ── TVA MONTH ACHIEVEMENT PILLS ── */
 .tva-month-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px;}
 .tva-month-pill{border-radius:8px;padding:8px 6px;text-align:center;border:1.5px solid var(--gray200);background:#fff;}
@@ -250,6 +251,7 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
   .chart-card{padding:14px;}
   .chart-area{height:180px;}
   .tva-month-grid{grid-template-columns:repeat(3,1fr);}
+  .tva-chart-wrap{height:260px;}
 }
 </style>
 </head>
@@ -350,11 +352,10 @@ const APIS = {
   builders: 'https://script.google.com/macros/s/AKfycbyt_ffHnLaheVTokjX72M2zC0uEP3mmWqQ_9m2_AJbiKd7Ee-LMkyo1FwaehdyFMYFm/exec',
   alm:      null
 };
-// Target vs Actual APIs (separate sheet/deployment per company)
 const APIS_TVA = {
   trading:  'https://script.google.com/macros/s/AKfycbzyXOJyuauCcyWSlhz211fzehjBM4upQXlJNMDyPPnGOqEbUw8VAU1cGPoYMjEFAycv/exec',
   builders: 'https://script.google.com/macros/s/AKfycbz1hMWJYgj_C6eNxCMwmDWv-eaP7PV2MSEdUHxm2XSrORWPNP03wGLW4fq4rvB1Mf7l/exec',
-  alm:      null   // TODO: add when ready
+  alm:      null
 };
 
 const CO_THEMES = {
@@ -471,7 +472,6 @@ async function fetchData() {
     const cb = Date.now();
     const tvaUrl = APIS_TVA[S.company];
 
-    // IS and TVA fetched in parallel
     const isPromise  = fetch(apiUrl + '?action=getSummary&year=' + S.year + '&cb=' + cb, {signal: controller.signal});
     const tvaPromise = tvaUrl
       ? fetch(tvaUrl + '?action=getTargetVsActual&year=' + S.year + '&cb=' + cb, {signal: controller.signal})
@@ -484,7 +484,6 @@ async function fetchData() {
     const json = await isRes.json();
     if (!json.success) throw new Error(json.error || 'Fetch failed');
 
-    // Process IS data
     const sd = json.data; S.sum = sd;
     const salesArr = MONTHS.map(m=>sd.revenues.netSales[m]||0);
     const gpArr    = MONTHS.map(m=>sd.grossProfit.amount[m]||0);
@@ -499,7 +498,6 @@ async function fetchData() {
       monthlyTrend:{months:MONTHS,sales:salesArr,grossProfit:gpArr,cogs:cogsArr,opex:opexArr,netIncome:niArr}
     };
 
-    // Process TVA data (silent fail — IS still shows if TVA fails)
     S.tva = null;
     if (tvaRes) {
       try {
@@ -511,7 +509,7 @@ async function fetchData() {
         } else {
           const reason = tvaJson.data?.error || tvaJson.error || 'unknown';
           console.warn('[TVA] not loaded:', reason);
-          S.tva = null; // ensure null so TVA card stays hidden
+          S.tva = null;
         }
       } catch(e) {
         console.error('[TVA parse error]', e.message);
@@ -549,7 +547,7 @@ function renderAll() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  KPI CARDS — includes TVA card when data is available
+//  KPI CARDS
 // ═══════════════════════════════════════════════════════════════
 function renderKPIs() {
   const v  = getVals();
@@ -572,7 +570,6 @@ function renderKPIs() {
      value:peso(v.ni,true), meta:'Net Margin: '+pct(nm),
      change:v.ni>=0?'▲ '+pct(nm)+' NM':'▼ Net Loss', chCls:v.ni>=0?'ch-up':'ch-down',
      bar:Math.min(Math.abs(nm)*300,100)},
-    // Bonus Monitoring
     (()=>{
       const mt=50000,at=mt*12,sd=S.sum,d2=S.data;
       const tp=MONTHS.reduce((s,m,i)=>s+(sd?(sd.opex.totalCommissions[m]||0):(d2.monthlyTrend.opex[i]*0.05)),0);
@@ -585,9 +582,6 @@ function renderKPIs() {
     })()
   ];
 
-  // ── TVA HELPER — resolves values for current S.month filter ──
-  // Reads directly from row data (revenue.total, expenses.total, netIncome)
-  // Does NOT rely on dashSummary (which may be empty if sheet has no DASHBOARD_DATA section)
   function getTvaVals() {
     const tva = S.tva;
     if (!tva || !tva.kpi || !tva.revenue || !tva.expenses || !tva.netIncome) return null;
@@ -605,7 +599,6 @@ function renderKPIs() {
       niActual   = kpi.netIncome.ytdActual  || 0;
       niTarget   = kpi.netIncome.ytdTarget  || 0;
     } else {
-      // Read directly from the monthly breakdown in each row (null-safe)
       const revRow = (tva.revenue  && tva.revenue.total  && tva.revenue.total.monthly  && tva.revenue.total.monthly[m])  || {};
       const expRow = (tva.expenses && tva.expenses.total && tva.expenses.total.monthly && tva.expenses.total.monthly[m]) || {};
       const niRow  = (tva.netIncome && tva.netIncome.monthly && tva.netIncome.monthly[m]) || {};
@@ -625,7 +618,6 @@ function renderKPIs() {
              revPct, expPct, niPct, isYTD, label: isYTD ? 'YTD' : m };
   }
 
-  // ── TVA CARD — only when data is fully loaded and valid ──
   if (S.tva && S.tva.kpi && S.tva.kpi.revenue && S.tva.kpi.expenses && S.tva.kpi.netIncome) {
     try {
       const tv = getTvaVals();
@@ -736,13 +728,13 @@ function openDrill(id) {
     else if (id === 'opex')         initOpexSubChart(S.opexSub);
     else if (id !== 'bonus' && tab === 'chart') initDrillChart(id);
     panel.scrollIntoView({behavior:'smooth', block:'nearest'});
-  }, id === 'tva' ? 150 : 60);
+  }, 200);
 }
 
 function setDrillTab(id, tab) { S.drillTab[id] = tab; openDrill(id); }
 
 // ═══════════════════════════════════════════════════════════════
-//  TVA DRILL — main builder
+//  TVA DRILL
 // ═══════════════════════════════════════════════════════════════
 function buildTvaDrill() {
   if (!S.tva || !S.tva.kpi || !S.tva.kpi.revenue) {
@@ -757,7 +749,6 @@ function buildTvaDrill() {
   }
   const kpi = S.tva.kpi;
   const tv  = (() => {
-    // Read directly from row monthly data (not dashSummary which may be empty)
     const m = S.month, isYTD = m === 'all';
     const tva = S.tva;
     const revTotal = tva.revenue  && tva.revenue.total;
@@ -780,9 +771,8 @@ function buildTvaDrill() {
       isYTD, label: isYTD ? 'YTD' : m
     };
   })();
-  const revPct = tv.revPct, expPct = tv.expPct, niAmt = tv.niActual, niTgt = tv.niTarget;
+  const revPct = tv.revPct, niAmt = tv.niActual, niTgt = tv.niTarget;
 
-  // ── Summary stats ──
   const statsHtml = `<div class="drill-stats" style="margin-bottom:16px;">
     <div class="dstat highlight">
       <div class="dstat-val">${revPct.toFixed(1)}%</div>
@@ -802,14 +792,13 @@ function buildTvaDrill() {
     </div>
   </div>`;
 
-  // ── 3 Sub-cards ──
-  const revAchPct = revPct;
-  const expAchPct = expPct;
+  const revAchPct = tv.revPct;
+  const expAchPct = tv.expPct;
   const niAchPct  = niTgt !== 0 ? (niAmt / niTgt * 100) : 0;
 
   const achBadge = (pct, isExpense) => {
     let cls, lbl;
-    if (isExpense) { // for expenses lower = better
+    if (isExpense) {
       cls = pct <= 100 ? 'good' : pct <= 120 ? 'warn' : 'bad';
       lbl = pct <= 100 ? '✅ Under Budget' : pct <= 120 ? '⚠ Over Budget' : '❌ Exceeded';
     } else {
@@ -842,7 +831,6 @@ function buildTvaDrill() {
     }).join('')}
   </div>`;
 
-  // ── Chart / Table tabs ──
   const contentTabs = `<div class="drill-tabs" style="margin-bottom:16px;">
     <button class="dtab${S.tvaSubTab !== 'table' ? ' active' : ''}" onclick="setTvaSubTab('chart')"><i class="bi bi-bar-chart me-1"></i>Chart</button>
     <button class="dtab${S.tvaSubTab === 'table' ? ' active' : ''}" onclick="setTvaSubTab('table')"><i class="bi bi-table me-1"></i>Table</button>
@@ -851,81 +839,76 @@ function buildTvaDrill() {
   return statsHtml + subCardHtml + contentTabs + `<div id="tvaContent" class="opex-content-area">${buildTvaSubContent()}</div>`;
 }
 
-function setTvaSub(sub)    {
+function setTvaSub(sub) {
   S.tvaSub = sub;
   if (S.activeDrill === 'tva') {
     openDrill('tva');
-    if (S.tvaSubTab !== 'table') setTimeout(() => initTvaSubChart(sub), 200);
   }
 }
 function setTvaSubTab(tab) {
   S.tvaSubTab = tab;
   if (S.activeDrill === 'tva') {
     openDrill('tva');
-    if (tab !== 'table') setTimeout(() => initTvaSubChart(S.tvaSub), 200);
   }
 }
 
 function buildTvaSubContent() {
   if (!S.tvaSubTab) S.tvaSubTab = 'chart';
   if (S.tvaSubTab === 'table') return buildTvaSubTable();
-  return `<div class="drill-viz-row"><div class="drill-chart" style="position:relative;height:380px;min-height:380px;"><canvas id="tvaSubCanvas" style="display:block;width:100%;height:100%;"></canvas></div>${buildTvaSubBars()}</div>`;
+  // ── FIX: use .tva-chart-wrap with explicit height so Chart.js always has a measurable container ──
+  return `<div class="drill-viz-row">
+    <div class="tva-chart-wrap"><canvas id="tvaSubCanvas"></canvas></div>
+    ${buildTvaSubBars()}
+  </div>`;
 }
 
-// ── TVA revenue schema — adapts to company ──────────────────
-  // Different companies have different revenue line item names.
-  // Returns array of { l (label), key (field name in tva.revenue), c (color) }
-  function getTvaRevSchema() {
-    const co = S.company;
-    if (co === 'trading') {
-      return [
-        { l:'Sales Revenue / Net Sales',  key:'salesRevenue',  c:C.indigo  },
-        { l:'Other Operating Income',      key:'otherOpIncome', c:C.blue2   },
-        { l:'Other Income',               key:'otherIncome',   c:C.teal2   }
-      ];
-    }
-    // builders (default)
+// ── TVA revenue schema — adapts to company ──
+function getTvaRevSchema() {
+  const co = S.company;
+  if (co === 'trading') {
     return [
-      { l:'Contract Net Fee / Service Revenue', key:'contractRevenue', c:C.indigo },
-      { l:'Repair Income / Other Operating',    key:'repairIncome',    c:C.blue2  },
-      { l:'Other Income',                        key:'otherIncome',     c:C.teal2  }
+      { l:'Sales Revenue / Net Sales',  key:'salesRevenue',  c:C.indigo  },
+      { l:'Other Operating Income',      key:'otherOpIncome', c:C.blue2   },
+      { l:'Other Income',               key:'otherIncome',   c:C.teal2   }
     ];
   }
+  return [
+    { l:'Contract Net Fee / Service Revenue', key:'contractRevenue', c:C.indigo },
+    { l:'Repair Income / Other Operating',    key:'repairIncome',    c:C.blue2  },
+    { l:'Other Income',                        key:'otherIncome',     c:C.teal2  }
+  ];
+}
 
-  // ── TVA expense schema — adapts to company ──────────────────
-  function getTvaExpSchema() {
-    const co = S.company;
-    if (co === 'trading') {
-      return [
-        { l:'Salaries & Wages',       k:'salariesWages',    c:C.orange2  },
-        { l:'Interest on Loan',       k:'interestLoan',     c:C.red2     },
-        { l:'Transportation',         k:'transportation',   c:C.blue2    },
-        { l:'Materials',              k:'materials',        c:'#8b5cf6'  },
-        { l:'Car Rental Fee',         k:'carRental',        c:C.green2   },
-        { l:'Amortization',           k:'amortization',     c:'#f59e0b'  },
-        { l:'Taxes & Licenses',       k:'taxesLicenses',    c:C.teal2    },
-        { l:'Other Direct Costs',     k:'otherDirect',      c:'#ec4899'  }
-      ];
-    }
-    // builders (default)
+function getTvaExpSchema() {
+  const co = S.company;
+  if (co === 'trading') {
     return [
-      { l:'Salaries & Wages',     k:'salariesWages',    c:C.orange2  },
-      { l:'Interest on Loan',     k:'interestLoan',     c:C.red2     },
-      { l:'Transportation',       k:'transportation',   c:C.blue2    },
-      { l:'Amort. Office Equip',  k:'amortOfficeEquip', c:'#8b5cf6'  },
-      { l:'Taxes & Licenses',     k:'taxesLicenses',    c:C.teal2    },
-      { l:'Car Rental — KIA',     k:'carRentalKia',     c:C.green2   },
-      { l:'Office Rental',        k:'officeRental',     c:'#f59e0b'  },
-      { l:'Meals',                k:'meals',            c:'#ec4899'  }
+      { l:'Salaries & Wages',       k:'salariesWages',    c:C.orange2  },
+      { l:'Interest on Loan',       k:'interestLoan',     c:C.red2     },
+      { l:'Transportation',         k:'transportation',   c:C.blue2    },
+      { l:'Materials',              k:'materials',        c:'#8b5cf6'  },
+      { l:'Car Rental Fee',         k:'carRental',        c:C.green2   },
+      { l:'Amortization',           k:'amortization',     c:'#f59e0b'  },
+      { l:'Taxes & Licenses',       k:'taxesLicenses',    c:C.teal2    },
+      { l:'Other Direct Costs',     k:'otherDirect',      c:'#ec4899'  }
     ];
   }
+  return [
+    { l:'Salaries & Wages',     k:'salariesWages',    c:C.orange2  },
+    { l:'Interest on Loan',     k:'interestLoan',     c:C.red2     },
+    { l:'Transportation',       k:'transportation',   c:C.blue2    },
+    { l:'Amort. Office Equip',  k:'amortOfficeEquip', c:'#8b5cf6'  },
+    { l:'Taxes & Licenses',     k:'taxesLicenses',    c:C.teal2    },
+    { l:'Car Rental — KIA',     k:'carRentalKia',     c:C.green2   },
+    { l:'Office Rental',        k:'officeRental',     c:'#f59e0b'  },
+    { l:'Meals',                k:'meals',            c:'#ec4899'  }
+  ];
+}
 
-  function buildTvaSubBars() {
+function buildTvaSubBars() {
   if (!S.tva) return '';
   const sub = S.tvaSub, tva = S.tva;
   const m = S.month, isYTD = m === 'all';
-  // Helper: get actual for a row — YTD or single month
-  // Null-safe getters — guard against missing row, ytd, or monthly entries
   const getA = row => !row ? 0 : (isYTD ? (row.ytd ? row.ytd.actual  : 0) : (row.monthly && row.monthly[m] ? row.monthly[m].actual  : 0));
   const getT = row => !row ? 0 : (isYTD ? (row.ytd ? row.ytd.target  : 0) : (row.monthly && row.monthly[m] ? row.monthly[m].target  : 0));
   const lbl  = isYTD ? 'YTD' : m;
@@ -948,7 +931,7 @@ function buildTvaSubContent() {
       .filter(i => i.t > 0 || i.v > 0)
       .sort((a,b) => b.v - a.v).slice(0, 8);
 
-  } else { // ni
+  } else {
     if (isYTD) {
       title = 'Net Income by Month';
       const niRowM = (tva.netIncome && tva.netIncome.monthly) || {};
@@ -956,7 +939,6 @@ function buildTvaSubContent() {
         .filter(mo => niRowM[mo] && (niRowM[mo].actual !== 0 || niRowM[mo].target !== 0))
         .map(mo => ({ l:mo, v:niRowM[mo].actual, t:niRowM[mo].target, c:niRowM[mo].actual >= 0 ? C.green2 : C.red2 }));
     } else {
-      // single month — read from row monthly data
       title = `${m} Overview`;
       const revRow = (tva.revenue  && tva.revenue.total  && tva.revenue.total.monthly  && tva.revenue.total.monthly[m])  || {};
       const expRow = (tva.expenses && tva.expenses.total && tva.expenses.total.monthly && tva.expenses.total.monthly[m]) || {};
@@ -997,7 +979,6 @@ function buildTvaSubTable() {
     return met ? '✅' : '❌';
   };
 
-  // For a given row, get actual/target/variance depending on month filter
   const rowVals = (d) => {
     if (!d) return { a:0, t:0, v:0 };
     if (isYTD) {
@@ -1013,7 +994,6 @@ function buildTvaSubTable() {
 
   if (sub === 'revenue') {
     const rev = tva.revenue;
-    // Build items from company-aware schema
     const revSchema = getTvaRevSchema();
     const items = revSchema.map(s => ({ l:s.l, d:rev[s.key] || null })).filter(it => it.d);
     const totItem = { l:'TOTAL REVENUE', d:rev.total, isTot:true };
@@ -1039,12 +1019,8 @@ function buildTvaSubTable() {
 
   if (sub === 'expenses') {
     const exp = tva.expenses;
-    // Use company-aware schema for display labels and keys
-    const expSchema = getTvaExpSchema();
-    // For full table, show ALL expense items that exist in the data
     const allExpKeys = Object.keys(exp).filter(k => k !== 'total');
     const allExpLabels = {
-      // Builders
       salariesWages:'Salaries & Wages', postage:'Postage & Telecom',
       officeRental:'Office Rental Fee', carRentalKia:'Car Rental Fee — KIA',
       meals:'Meals & Refreshments', professional:'Professional & Consultant Fee',
@@ -1052,7 +1028,6 @@ function buildTvaSubTable() {
       miscellaneous:'Miscellaneous Expense', taxesLicenses:'Taxes, Licenses & Permits',
       amortMarketing:'Amort. — Marketing', amortOfficeEquip:'Amort. — Office Equip.',
       amortMotorcycle:'Amort. — Motorcycle', amortTrainings:'Amort. — Trainings',
-      // Trading extras
       materials:'Materials', officeSuppliesDirect:'Office Supplies (Direct)',
       officeFurniture:'Office Furniture & Fixtures', otherDirect:'Other Direct Costs',
       commissionsDir:'Commissions – Direct', officeSupplies:'Office Supplies',
@@ -1086,10 +1061,7 @@ function buildTvaSubTable() {
   }
 
   // Net Income tab
-  const ds = tva.dashSummary;
   if (isYTD) {
-    // All months
-    // Read from row monthly data
     const niMo = (tva.netIncome && tva.netIncome.monthly) || {};
     const rows = MONTHS.map(mo => {
       const d = niMo[mo]; if (!d) return '';
@@ -1102,8 +1074,7 @@ function buildTvaSubTable() {
     return wrap('<table class="data-table">' + H(['MONTH','NI TARGET','NI ACTUAL','VARIANCE','ACHIEVEMENT','STATUS']) +
       `<tbody>${rows}<tr class="tot"><td>YTD TOTAL</td><td class="num">${peso(niTotT)}</td><td class="num">${peso(niTotA)}</td><td class="num ${niTotV>=0?'vp':'vn'}">${niTotV>=0?'+':''}${peso(niTotV)}</td><td class="num">${niTotT!==0?((niTotA/niTotT)*100).toFixed(1)+'%':'—'}</td><td>—</td></tr></tbody></table>`);
   } else {
-    // Single month — show rev/exp/NI for that month
-    // Read from row monthly data — no dashSummary needed
+    // ── FIX: read from row monthly data, NOT dashSummary (which may be empty for Trading) ──
     const revR = (tva.revenue  && tva.revenue.total  && tva.revenue.total.monthly  && tva.revenue.total.monthly[m])  || {};
     const expR = (tva.expenses && tva.expenses.total && tva.expenses.total.monthly && tva.expenses.total.monthly[m]) || {};
     const niR  = (tva.netIncome && tva.netIncome.monthly && tva.netIncome.monthly[m]) || {};
@@ -1119,22 +1090,15 @@ function buildTvaSubTable() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  TVA CHART INIT — fixed to always read from row monthly data
+// ═══════════════════════════════════════════════════════════════
 function initTvaSubChart(sub) {
   const ctx = el('tvaSubCanvas');
   if (!ctx || !S.tva) return;
 
-  // Force parent container to have explicit height so Chart.js can measure canvas
-  const parent = ctx.parentElement;
-  if (parent) {
-    parent.style.height = '380px';
-    parent.style.position = 'relative';
-  }
-  // Explicitly size canvas to prevent 0×0 render in CSS Grid
-  ctx.style.width  = '100%';
-  ctx.style.height = '100%';
-
   if (S.charts.tvaSub) { S.charts.tvaSub.destroy(); delete S.charts.tvaSub; }
-  const ds  = S.tva.dashSummary;
+
   const tva = S.tva;
   const m   = S.month, isYTD = m === 'all';
   const opts = mkBarOpts();
@@ -1145,16 +1109,31 @@ function initTvaSubChart(sub) {
   const tgtDS = { label:'Target', backgroundColor:'rgba(203,213,225,.55)', borderColor:'#94a3b8', borderWidth:1.5, borderRadius:4, barPercentage:.4, categoryPercentage:.9 };
   const actBase = { borderWidth:2, borderRadius:4, barPercentage:.4, categoryPercentage:.9 };
 
+  // Helper: read actual/target from a row for the current month filter
+  // ── FIX: always use row.monthly[m] for single month, row.ytd for YTD
+  //    Never fall back to dashSummary[m] which may be missing for Trading
+  const getRowA = (row) => {
+    if (!row) return 0;
+    if (isYTD) return row.ytd ? (row.ytd.actual || 0) : 0;
+    return (row.monthly && row.monthly[m]) ? (row.monthly[m].actual || 0) : 0;
+  };
+  const getRowT = (row) => {
+    if (!row) return 0;
+    if (isYTD) return row.ytd ? (row.ytd.target || 0) : 0;
+    return (row.monthly && row.monthly[m]) ? (row.monthly[m].target || 0) : 0;
+  };
+
   if (isYTD) {
-    // ── YTD: use row monthly data directly (dashSummary may be empty) ──
+    // ── YTD: month-by-month bars using row monthly data ──
     const rev = (tva.revenue  && tva.revenue.total  && tva.revenue.total.monthly)  || {};
     const exp = (tva.expenses && tva.expenses.total && tva.expenses.total.monthly) || {};
     const ni  = (tva.netIncome && tva.netIncome.monthly) || {};
-    // Only show months that have actual data entered
+
+    // Only render months that have some data entered
     const activeMths = MONTHS.filter(mo =>
-      (rev[mo] && rev[mo].actual !== 0) ||
-      (exp[mo] && exp[mo].actual !== 0) ||
-      (ni[mo]  && ni[mo].actual  !== 0)
+      (rev[mo] && (rev[mo].actual !== 0 || rev[mo].target !== 0)) ||
+      (exp[mo] && (exp[mo].actual !== 0 || exp[mo].target !== 0)) ||
+      (ni[mo]  && (ni[mo].actual  !== 0 || ni[mo].target  !== 0))
     );
     const labels = activeMths.length > 0 ? activeMths : MONTHS.slice(0, 1);
 
@@ -1172,7 +1151,7 @@ function initTvaSubChart(sub) {
          backgroundColor:'rgba(249,115,22,.3)', borderColor:C.orange2}
       ]}, options:opts});
 
-    } else { // ni — monthly bars
+    } else { // ni
       const acts = labels.map(mo => ni[mo]?ni[mo].actual:0);
       S.charts.tvaSub = new Chart(ctx, {type:'bar', data:{labels, datasets:[
         {...tgtDS, label:'NI Target', data:labels.map(mo=>ni[mo]?ni[mo].target:0)},
@@ -1183,43 +1162,52 @@ function initTvaSubChart(sub) {
     }
 
   } else {
-    // ── Single month: show grouped bar with line items ───────
-    const dsMo = ds[m] || {};
-    const rev  = tva.revenue, exp = tva.expenses;
-    const getA = (row) => !row ? 0 : (row.monthly && row.monthly[m] ? row.monthly[m].actual : (row.ytd ? row.ytd.actual : 0));
-    const getT = (row) => !row ? 0 : (row.monthly && row.monthly[m] ? row.monthly[m].target : (row.ytd ? row.ytd.target : 0));
+    // ── Single month: read from row monthly data ONLY ──
+    // ── FIX: removed all references to ds/dashSummary[m] which is unreliable for Trading ──
+    const rev = tva.revenue;
+    const exp = tva.expenses;
+    const ni  = tva.netIncome;
 
     if (sub === 'revenue') {
       const revSchema = getTvaRevSchema();
       const rows = [
         ...revSchema.map(s => ({ l:s.l, d:rev[s.key]||null })).filter(r=>r.d),
         { l:'TOTAL', d:rev.total }
-      ].filter(r => r.d && (getT(r.d)!==0||getA(r.d)!==0));
+      ].filter(r => r.d && (getRowT(r.d)!==0 || getRowA(r.d)!==0));
+
       S.charts.tvaSub = new Chart(ctx, {type:'bar', data:{
         labels: rows.map(r=>r.l),
         datasets:[
-          {...tgtDS, label:`Target`, data:rows.map(r=>getT(r.d))},
-          {...actBase, label:`${m} Actual`, data:rows.map(r=>getA(r.d)), backgroundColor:'rgba(79,70,229,.3)', borderColor:C.indigo}
+          {...tgtDS, label:`Target`, data:rows.map(r=>getRowT(r.d))},
+          {...actBase, label:`${m} Actual`, data:rows.map(r=>getRowA(r.d)),
+           backgroundColor:'rgba(79,70,229,.3)', borderColor:C.indigo}
         ]}, options:opts});
 
     } else if (sub === 'expenses') {
       const eMap = [
         ...getTvaExpSchema(),
         { l:'TOTAL', k:'total' }
-      ].map(r => ({l:r.l, d:exp[r.k]})).filter(r=>r.d&&(getT(r.d)!==0||getA(r.d)!==0));
-      const acts = eMap.map(r=>getA(r.d));
+      ].map(r => ({l:r.l, d:exp[r.k]})).filter(r=>r.d&&(getRowT(r.d)!==0||getRowA(r.d)!==0));
+      const acts = eMap.map(r=>getRowA(r.d));
+
       S.charts.tvaSub = new Chart(ctx, {type:'bar', data:{
         labels: eMap.map(r=>r.l),
         datasets:[
-          {...tgtDS, label:`Target`, data:eMap.map(r=>getT(r.d))},
+          {...tgtDS, label:`Target`, data:eMap.map(r=>getRowT(r.d))},
           {...actBase, label:`${m} Actual`, data:acts,
            backgroundColor:'rgba(249,115,22,.3)', borderColor:C.orange2}
         ]}, options:opts});
 
-    } else { // ni single month — show rev/exp/ni side by side
+    } else {
+      // ── FIX: NI single-month — read directly from row monthly data, not dashSummary ──
+      const revRow = (rev && rev.total && rev.total.monthly && rev.total.monthly[m]) || {};
+      const expRow = (exp && exp.total && exp.total.monthly && exp.total.monthly[m]) || {};
+      const niRow  = (ni  && ni.monthly && ni.monthly[m]) || {};
+
       const labels = ['Revenue','Expenses','Net Income'];
-      const tgts = [dsMo.revTarget||0, dsMo.expTarget||0, dsMo.niTarget||0];
-      const acts = [dsMo.revActual||0, dsMo.expActual||0, dsMo.niActual||0];
+      const tgts = [revRow.target||0, expRow.target||0, niRow.target||0];
+      const acts = [revRow.actual||0, expRow.actual||0, niRow.actual||0];
+
       S.charts.tvaSub = new Chart(ctx, {type:'bar', data:{labels, datasets:[
         {...tgtDS, label:`Target`, data:tgts},
         {...actBase, label:`${m} Actual`, data:acts,
@@ -1323,23 +1311,6 @@ function buildOpexSubTable(){
     return wrap('<table class="data-table">'+H(['COMMISSION',...MONTHS,'YTD'])+'<tbody>'+items.map(it=>`<tr><td>${it.l}</td>${MONTHS.map(m=>`<td class="num">${peso(it.d[m]||0)}</td>`).join('')}<td class="num">${peso(it.d.YTD||0)}</td></tr>`).join('')+`<tr class="tot"><td>Total Commissions</td>${MONTHS.map(m=>`<td class="num">${peso(sd.opex.totalCommissions[m]||0)}</td>`).join('')}<td class="num">${peso(sd.opex.totalCommissions.YTD||0)}</td></tr></tbody></table>`);
   }
   return '<p class="p-3 text-muted small">No data.</p>';
-}
-function initOpexSubChart(sub){
-  const ctx=el('opexSubCanvas'); if(!ctx) return;
-  if(S.charts.opexSub){S.charts.opexSub.destroy();delete S.charts.opexSub;}
-  const sd=S.sum,d=S.data.monthlyTrend,opts=mkBarOpts();
-  opts.interaction={mode:'index',intersect:false};
-  if(sub==='comp'){
-    const compData=sd?MONTHS.map(m=>sd.compensation.total[m]||0):d.opex.map(v=>v*0.36);
-    S.charts.opexSub=new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[{label:'Compensation',data:compData,backgroundColor:'rgba(29,78,216,.2)',borderColor:C.blue,borderWidth:2,borderRadius:5},{label:'Total OpEx',data:d.opex,type:'line',borderColor:C.orange2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3]}]},options:opts});
-  } else if(sub==='ga'){
-    const gaData=sd?MONTHS.map(m=>sd.opex.gaExpenses[m]||0):d.opex.map(v=>v*0.4);
-    S.charts.opexSub=new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[{label:'G&A Expenses',data:gaData,backgroundColor:'rgba(79,70,229,.2)',borderColor:'#4f46e5',borderWidth:2,borderRadius:5},{label:'Total OpEx',data:d.opex,type:'line',borderColor:C.orange2,backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3]}]},options:opts});
-  } else {
-    const staffData=sd?MONTHS.map(m=>sd.opex.staffCommission[m]||0):[];
-    const salesData=sd?MONTHS.map(m=>sd.opex.salesCommission[m]||0):[];
-    S.charts.opexSub=new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[{label:'Staff Commission',data:staffData,backgroundColor:'rgba(59,130,246,.25)',borderColor:C.blue2,borderWidth:2,borderRadius:5},{label:'Sales Commission',data:salesData,backgroundColor:'rgba(249,115,22,.25)',borderColor:C.orange2,borderWidth:2,borderRadius:5}]},options:opts});
-  }
 }
 function buildViz(id){
   const chartHtml=`<div class="drill-chart"><canvas id="drillCanvas"></canvas></div>`;
