@@ -605,10 +605,10 @@ function renderKPIs() {
       niActual   = kpi.netIncome.ytdActual  || 0;
       niTarget   = kpi.netIncome.ytdTarget  || 0;
     } else {
-      // Read directly from the monthly breakdown in each row
-      const revRow = tva.revenue.total.monthly[m]  || {};
-      const expRow = tva.expenses.total.monthly[m] || {};
-      const niRow  = tva.netIncome.monthly[m]      || {};
+      // Read directly from the monthly breakdown in each row (null-safe)
+      const revRow = (tva.revenue  && tva.revenue.total  && tva.revenue.total.monthly  && tva.revenue.total.monthly[m])  || {};
+      const expRow = (tva.expenses && tva.expenses.total && tva.expenses.total.monthly && tva.expenses.total.monthly[m]) || {};
+      const niRow  = (tva.netIncome && tva.netIncome.monthly && tva.netIncome.monthly[m]) || {};
       revActual = revRow.actual  || 0;
       revTarget = revRow.target  || kpi.revenue.monthlyTarget  || 0;
       expActual = expRow.actual  || 0;
@@ -760,9 +760,12 @@ function buildTvaDrill() {
     // Read directly from row monthly data (not dashSummary which may be empty)
     const m = S.month, isYTD = m === 'all';
     const tva = S.tva;
-    const rRow = isYTD ? null : (tva.revenue.total.monthly[m]  || {});
-    const eRow = isYTD ? null : (tva.expenses.total.monthly[m] || {});
-    const nRow = isYTD ? null : (tva.netIncome.monthly[m]      || {});
+    const revTotal = tva.revenue  && tva.revenue.total;
+    const expTotal = tva.expenses && tva.expenses.total;
+    const niData   = tva.netIncome;
+    const rRow = isYTD ? null : ((revTotal && revTotal.monthly && revTotal.monthly[m]) || {});
+    const eRow = isYTD ? null : ((expTotal && expTotal.monthly && expTotal.monthly[m]) || {});
+    const nRow = isYTD ? null : ((niData   && niData.monthly   && niData.monthly[m]  ) || {});
     const rA = isYTD ? (kpi.revenue.ytdActual||0)   : (rRow.actual||0);
     const rT = isYTD ? (kpi.revenue.ytdTarget||0)   : (rRow.target||kpi.revenue.monthlyTarget||0);
     const eA = isYTD ? (kpi.expenses.ytdActual||0)  : (eRow.actual||0);
@@ -910,8 +913,9 @@ function buildTvaSubContent() {
   const sub = S.tvaSub, tva = S.tva;
   const m = S.month, isYTD = m === 'all';
   // Helper: get actual for a row — YTD or single month
-  const getA = row => isYTD ? row.ytd.actual   : (row.monthly[m] ? row.monthly[m].actual   : 0);
-  const getT = row => isYTD ? row.ytd.target   : (row.monthly[m] ? row.monthly[m].target   : 0);
+  // Null-safe getters — guard against missing row, ytd, or monthly entries
+  const getA = row => !row ? 0 : (isYTD ? (row.ytd ? row.ytd.actual  : 0) : (row.monthly && row.monthly[m] ? row.monthly[m].actual  : 0));
+  const getT = row => !row ? 0 : (isYTD ? (row.ytd ? row.ytd.target  : 0) : (row.monthly && row.monthly[m] ? row.monthly[m].target  : 0));
   const lbl  = isYTD ? 'YTD' : m;
   let items = [], title = '';
 
@@ -934,18 +938,17 @@ function buildTvaSubContent() {
 
   } else { // ni
     if (isYTD) {
-      // show all months with data — read from row monthly data
       title = 'Net Income by Month';
-      const niRow = tva.netIncome.monthly;
+      const niRowM = (tva.netIncome && tva.netIncome.monthly) || {};
       items = MONTHS
-        .filter(mo => niRow[mo] && (niRow[mo].actual !== 0 || niRow[mo].target !== 0))
-        .map(mo => ({ l:mo, v:niRow[mo].actual, t:niRow[mo].target, c:niRow[mo].actual >= 0 ? C.green2 : C.red2 }));
+        .filter(mo => niRowM[mo] && (niRowM[mo].actual !== 0 || niRowM[mo].target !== 0))
+        .map(mo => ({ l:mo, v:niRowM[mo].actual, t:niRowM[mo].target, c:niRowM[mo].actual >= 0 ? C.green2 : C.red2 }));
     } else {
       // single month — read from row monthly data
       title = `${m} Overview`;
-      const revRow = tva.revenue.total.monthly[m]  || {};
-      const expRow = tva.expenses.total.monthly[m] || {};
-      const niRow  = tva.netIncome.monthly[m]      || {};
+      const revRow = (tva.revenue  && tva.revenue.total  && tva.revenue.total.monthly  && tva.revenue.total.monthly[m])  || {};
+      const expRow = (tva.expenses && tva.expenses.total && tva.expenses.total.monthly && tva.expenses.total.monthly[m]) || {};
+      const niRow  = (tva.netIncome && tva.netIncome.monthly && tva.netIncome.monthly[m]) || {};
       items = [
         { l:'Revenue',    v:revRow.actual||0, t:revRow.target||0, c:C.indigo  },
         { l:'Expenses',   v:expRow.actual||0, t:expRow.target||0, c:C.orange2 },
@@ -985,8 +988,11 @@ function buildTvaSubTable() {
   // For a given row, get actual/target/variance depending on month filter
   const rowVals = (d) => {
     if (!d) return { a:0, t:0, v:0 };
-    if (isYTD) return { a:d.ytd.actual, t:d.ytd.target, v:d.ytd.variance };
-    const mo = d.monthly[m] || {};
+    if (isYTD) {
+      const ytd = d.ytd || {};
+      return { a:ytd.actual||0, t:ytd.target||0, v:ytd.variance||0 };
+    }
+    const mo = (d.monthly && d.monthly[m]) || {};
     const a = mo.actual||0, t = mo.target||0;
     return { a, t, v:a-t };
   };
@@ -1045,7 +1051,7 @@ function buildTvaSubTable() {
     };
     const items = allExpKeys
       .map(k => ({ l:allExpLabels[k]||k, d:exp[k] }))
-      .filter(it => it.d && (it.d.annualTarget !== 0 || it.d.annualActual !== 0 || it.d.ytd.actual !== 0));
+      .filter(it => it.d && (it.d.annualTarget !== 0 || it.d.annualActual !== 0 || (it.d.ytd && it.d.ytd.actual !== 0)));
     const totItem = { l:'TOTAL EXPENSES', d:exp.total, isTot:true };
     if (isYTD) {
       return wrap('<table class="data-table">' + H(['DESCRIPTION','MONTHLY TARGET',...MONTHS,'YTD ACTUAL','YTD VARIANCE','%','✓']) +
@@ -1072,7 +1078,7 @@ function buildTvaSubTable() {
   if (isYTD) {
     // All months
     // Read from row monthly data
-    const niMo = tva.netIncome.monthly;
+    const niMo = (tva.netIncome && tva.netIncome.monthly) || {};
     const rows = MONTHS.map(mo => {
       const d = niMo[mo]; if (!d) return '';
       const va = d.actual - d.target;
@@ -1086,9 +1092,9 @@ function buildTvaSubTable() {
   } else {
     // Single month — show rev/exp/NI for that month
     // Read from row monthly data — no dashSummary needed
-    const revR = tva.revenue.total.monthly[m]  || {};
-    const expR = tva.expenses.total.monthly[m] || {};
-    const niR  = tva.netIncome.monthly[m]      || {};
+    const revR = (tva.revenue  && tva.revenue.total  && tva.revenue.total.monthly  && tva.revenue.total.monthly[m])  || {};
+    const expR = (tva.expenses && tva.expenses.total && tva.expenses.total.monthly && tva.expenses.total.monthly[m]) || {};
+    const niR  = (tva.netIncome && tva.netIncome.monthly && tva.netIncome.monthly[m]) || {};
     const rA=revR.actual||0, rT=revR.target||0, rV=rA-rT;
     const eA=expR.actual||0, eT=expR.target||0, eV=eA-eT;
     const nA=niR.actual||0,  nT=niR.target||0,  nV=nA-nT;
@@ -1116,9 +1122,9 @@ function initTvaSubChart(sub) {
 
   if (isYTD) {
     // ── YTD: use row monthly data directly (dashSummary may be empty) ──
-    const rev = tva.revenue.total.monthly;
-    const exp = tva.expenses.total.monthly;
-    const ni  = tva.netIncome.monthly;
+    const rev = (tva.revenue  && tva.revenue.total  && tva.revenue.total.monthly)  || {};
+    const exp = (tva.expenses && tva.expenses.total && tva.expenses.total.monthly) || {};
+    const ni  = (tva.netIncome && tva.netIncome.monthly) || {};
     // Only show months that have actual data entered
     const activeMths = MONTHS.filter(mo =>
       (rev[mo] && rev[mo].actual !== 0) ||
@@ -1129,22 +1135,22 @@ function initTvaSubChart(sub) {
 
     if (sub === 'revenue') {
       S.charts.tvaSub = new Chart(ctx, {type:'bar', data:{labels, datasets:[
-        {...tgtDS, label:'Revenue Target', data:labels.map(mo=>rev[mo]?rev[mo].target:0)},
-        {...actBase, label:'Revenue Actual', data:labels.map(mo=>rev[mo]?rev[mo].actual:0),
+        {...tgtDS, label:'Revenue Target', data:labels.map(mo=>revRow[mo]?revRow[mo].target:0)},
+        {...actBase, label:'Revenue Actual', data:labels.map(mo=>revRow[mo]?revRow[mo].actual:0),
          backgroundColor:'rgba(79,70,229,.3)', borderColor:C.indigo}
       ]}, options:opts});
 
     } else if (sub === 'expenses') {
       S.charts.tvaSub = new Chart(ctx, {type:'bar', data:{labels, datasets:[
-        {...tgtDS, label:'Expense Target', data:labels.map(mo=>exp[mo]?exp[mo].target:0)},
-        {...actBase, label:'Expense Actual', data:labels.map(mo=>exp[mo]?exp[mo].actual:0),
+        {...tgtDS, label:'Expense Target', data:labels.map(mo=>expRow[mo]?expRow[mo].target:0)},
+        {...actBase, label:'Expense Actual', data:labels.map(mo=>expRow[mo]?expRow[mo].actual:0),
          backgroundColor:'rgba(249,115,22,.3)', borderColor:C.orange2}
       ]}, options:opts});
 
     } else { // ni — monthly bars
-      const acts = labels.map(mo => ni[mo]?ni[mo].actual:0);
+      const acts = labels.map(mo => niRow[mo]?niRow[mo].actual:0);
       S.charts.tvaSub = new Chart(ctx, {type:'bar', data:{labels, datasets:[
-        {...tgtDS, label:'NI Target', data:labels.map(mo=>ni[mo]?ni[mo].target:0)},
+        {...tgtDS, label:'NI Target', data:labels.map(mo=>niRow[mo]?niRow[mo].target:0)},
         {...actBase, label:'NI Actual', data:acts,
          backgroundColor:acts.map(v=>v>=0?'rgba(34,197,94,.3)':'rgba(239,68,68,.3)'),
          borderColor:acts.map(v=>v>=0?C.green2:C.red2)}
@@ -1155,8 +1161,8 @@ function initTvaSubChart(sub) {
     // ── Single month: show grouped bar with line items ───────
     const dsMo = ds[m] || {};
     const rev  = tva.revenue, exp = tva.expenses;
-    const getA = (row) => row.monthly[m] ? row.monthly[m].actual : 0;
-    const getT = (row) => row.monthly[m] ? row.monthly[m].target : 0;
+    const getA = (row) => !row ? 0 : (row.monthly && row.monthly[m] ? row.monthly[m].actual : (row.ytd ? row.ytd.actual : 0));
+    const getT = (row) => !row ? 0 : (row.monthly && row.monthly[m] ? row.monthly[m].target : (row.ytd ? row.ytd.target : 0));
 
     if (sub === 'revenue') {
       const revSchema = getTvaRevSchema();
