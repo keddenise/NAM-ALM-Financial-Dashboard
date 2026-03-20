@@ -353,7 +353,7 @@ const APIS = {
 // Target vs Actual APIs (separate sheet/deployment per company)
 const APIS_TVA = {
   trading:  null,  // TODO: add when ready
-  builders: 'https://script.google.com/macros/s/AKfycbwWgTEboUnFskXlXAkHTWb9HCP8oertCY8j7fOJs6GtYct_NYK5RkwFcfuz5L-gTYUk/exec',
+  builders: 'https://script.google.com/macros/s/AKfycbz1hMWJYgj_C6eNxCMwmDWv-eaP7PV2MSEdUHxm2XSrORWPNP03wGLW4fq4rvB1Mf7l/exec',
   alm:      null   // TODO: add when ready
 };
 
@@ -504,8 +504,18 @@ async function fetchData() {
     if (tvaRes) {
       try {
         const tvaJson = await tvaRes.json();
-        if (tvaJson.success) S.tva = tvaJson.data;
-      } catch(e) { /* TVA parse error — continue without it */ }
+        console.log('[TVA API response]', JSON.stringify(tvaJson).slice(0, 500));
+        if (tvaJson.success && tvaJson.data && !tvaJson.data.error) {
+          S.tva = tvaJson.data;
+          console.log('[TVA] kpi keys:', S.tva.kpi ? Object.keys(S.tva.kpi) : 'kpi is missing!');
+        } else {
+          const reason = tvaJson.data?.error || tvaJson.error || 'unknown';
+          console.warn('[TVA] not loaded:', reason);
+          S.tva = null; // ensure null so TVA card stays hidden
+        }
+      } catch(e) {
+        console.error('[TVA parse error]', e.message);
+      }
     }
 
     el('periodHead').style.display = 'flex';
@@ -575,26 +585,28 @@ function renderKPIs() {
     })()
   ];
 
-  // ── TVA CARD — only when data is loaded ──
-  if (S.tva) {
-    const kpi = S.tva.kpi;
-    const revPct = kpi.revenue.ytdPct * 100;
-    const expPct = kpi.expenses.ytdPct * 100;
-    const niAmt  = kpi.netIncome.ytdActual;
-    const niTgt  = kpi.netIncome.ytdTarget;
-    const niPct  = niTgt !== 0 ? (niAmt / niTgt * 100) : 0;
-    const am     = kpi.activeMonths || 1;
-    const overallPct = revPct;
-    const achCls = overallPct >= 100 ? 'ch-up' : overallPct >= 60 ? 'ch-flat' : 'ch-down';
-    const achLbl = overallPct >= 100 ? '✅ On Track' : overallPct >= 60 ? `⚡ ${overallPct.toFixed(1)}% Rev` : `⚠ ${overallPct.toFixed(1)}% Rev`;
-    cards.push({
-      id: 'tva', cls: 'kpi-indigo', icon: 'bi-bar-chart-steps',
-      label: 'Actual vs Target',
-      value: revPct.toFixed(1) + '%',
-      meta: `Exp: ${expPct.toFixed(1)}% · NI: ${peso(niAmt,true)}`,
-      change: achLbl, chCls: achCls,
-      bar: Math.min(revPct, 100)
-    });
+  // ── TVA CARD — only when data is fully loaded and valid ──
+  if (S.tva && S.tva.kpi && S.tva.kpi.revenue && S.tva.kpi.expenses && S.tva.kpi.netIncome) {
+    try {
+      const kpi = S.tva.kpi;
+      const revPct = (kpi.revenue.ytdPct || 0) * 100;
+      const expPct = (kpi.expenses.ytdPct || 0) * 100;
+      const niAmt  = kpi.netIncome.ytdActual || 0;
+      const niTgt  = kpi.netIncome.ytdTarget || 0;
+      const overallPct = revPct;
+      const achCls = overallPct >= 100 ? 'ch-up' : overallPct >= 60 ? 'ch-flat' : 'ch-down';
+      const achLbl = overallPct >= 100 ? '✅ On Track' : overallPct >= 60 ? `⚡ ${overallPct.toFixed(1)}% Rev` : `⚠ ${overallPct.toFixed(1)}% Rev`;
+      cards.push({
+        id: 'tva', cls: 'kpi-indigo', icon: 'bi-bar-chart-steps',
+        label: 'Actual vs Target',
+        value: revPct.toFixed(1) + '%',
+        meta: `Exp: ${expPct.toFixed(1)}% · NI: ${peso(niAmt,true)}`,
+        change: achLbl, chCls: achCls,
+        bar: Math.min(revPct, 100)
+      });
+    } catch(e) {
+      console.warn('TVA card render error:', e.message);
+    }
   }
 
   el('kpiGrid').innerHTML = cards.map(c =>
@@ -694,12 +706,21 @@ function setDrillTab(id, tab) { S.drillTab[id] = tab; openDrill(id); }
 //  TVA DRILL — main builder
 // ═══════════════════════════════════════════════════════════════
 function buildTvaDrill() {
-  if (!S.tva) return `<div class="p-4 text-center" style="color:var(--gray500);font-size:13px;">TVA data unavailable for this company/year.</div>`;
+  if (!S.tva || !S.tva.kpi || !S.tva.kpi.revenue) {
+    const raw = S.tva ? JSON.stringify(S.tva).slice(0, 400) : 'null';
+    return `<div class="p-4">
+      <p style="color:var(--red);font-weight:600;font-size:13px;">⚠ TVA data structure error</p>
+      <p style="color:var(--gray500);font-size:12px;margin-top:8px;">The Apps Script returned data but it is missing expected fields.<br>
+      Check that <code>getTargetVsActual</code> function exists in the deployed Apps Script and that the <strong>INPUT</strong> sheet exists.</p>
+      <details style="margin-top:12px;"><summary style="font-size:11px;color:var(--gray500);cursor:pointer;">Raw API response (debug)</summary>
+      <pre style="font-size:10px;margin-top:8px;padding:8px;background:var(--gray50);border-radius:6px;overflow:auto;max-height:200px;">${raw}</pre></details>
+    </div>`;
+  }
   const kpi = S.tva.kpi;
-  const revPct = kpi.revenue.ytdPct * 100;
-  const expPct = kpi.expenses.ytdPct * 100;
-  const niAmt  = kpi.netIncome.ytdActual;
-  const niTgt  = kpi.netIncome.ytdTarget;
+  const revPct = (kpi.revenue.ytdPct || 0) * 100;
+  const expPct = (kpi.expenses.ytdPct || 0) * 100;
+  const niAmt  = kpi.netIncome.ytdActual || 0;
+  const niTgt  = kpi.netIncome.ytdTarget || 0;
 
   // ── Summary stats ──
   const statsHtml = `<div class="drill-stats" style="margin-bottom:16px;">
