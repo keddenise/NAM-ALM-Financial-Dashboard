@@ -801,22 +801,70 @@ function buildAlmClientTable(clients, m, isAll) {
 function buildAlmGaTable(ga, m, isAll) {
   const g = obj => obj ? (isAll ? (obj.YTD||0) : (obj[m]||0)) : 0;
   const det = ga.detail || {};
-  const GA_LABELS = {salariesWages:'Salaries & Wages',employeeBenefits:'Employee Benefits/Allowance',sil:'Service Incentive Leave',vlSlPay:'VL/SL Pay',holidayPay:'Holiday Pay',otNightDiff:'OT / Night Differential',bonusPerformanceOt:'Performance Bonus (OT)',bonus13thMonth:'13th Month Pay',bonusPenalty:'Bonus (Penalty Reduction)',statutoryBenefits:'Statutory Benefits',rentExpenses:'Rent Expenses',carRental:'Car Rental Fee',electricWater:'Electric & Water Bill',stationarySupplies:'Stationery & Supplies',postage:'Postage & Telecom',repairMaintenance:'Repair & Maintenance',representationExp:'Representation Expense',mealsRefreshments:'Meals & Refreshments',transportation:'Transportation',fuelLubricant:'Fuel & Lubricant',taxesLicenses:'Taxes, Licenses & Permits',penaltySurcharges:'Penalty & Surcharges',trainingSeminar:'Training & Seminar',professionalFees:'Professional/Consultant Fees',interestLoans:'Interest on Loans Payable',interestJewelry:'Interest on Jewelry Pawn',miscExpense:'Miscellaneous Expense',accruals_dole:'Accrual – DOLE',accruals_representation:'Accrual – Representation',accruals_grocery:'Accrual – Grocery Package',retirementFund:'Retirement Fund',officeEquipment:'Office Equipment',mayorPermit:"Mayor's Permit",depreciation:'Depreciation Expense'};
-  const items = Object.entries(det).map(([k,v])=>({l:GA_LABELS[k]||k,v:g(v)})).filter(i=>i.v!==0).sort((a,b)=>b.v-a.v);
-  // Monthly table
-  const allKeys = Object.keys(det);
-  const monthlyRows = allKeys.map(k => {
-    const lbl = GA_LABELS[k]||k;
-    const cells = MONTHS.map(mo => `<td class="num">${peso(det[k]?det[k][mo]||0:0)}</td>`).join('');
-    const ytd = det[k]?det[k].YTD||0:0;
-    return `<tr><td>${lbl}</td>${cells}<td class="num" style="font-weight:600">${peso(ytd)}</td></tr>`;
-  }).join('');
-  const totCells = MONTHS.map(mo => `<td class="num">${peso(ga.total[mo]||0)}</td>`).join('');
-  const totRow = `<tr class="tot"><td>TOTAL G&A</td>${totCells}<td class="num">${peso(ga.total.YTD||0)}</td></tr>`;
+
+  const GA_LABELS = {
+    postage         : 'Postage & Telecom',
+    utilities       : 'Electric & Water',
+    officeRental    : 'Office Rental',
+    officeSupplies  : 'Office Supplies',
+    officeMaint     : 'Office Maintenance',
+    vehicleMaint    : 'Vehicle Maintenance',
+    carRental       : 'Car Rental',
+    vehicleLicense  : 'Vehicle License',
+    advertising     : 'Advertising',
+    seminars        : 'Seminars & Meetings',
+    representation  : 'Representation',
+    marketingStaff  : 'Marketing Staff',
+    meals           : 'Meals & Refreshments',
+    gasolineAvanza  : 'Gasoline (Avanza)',
+    diesel          : 'Diesel',
+    gasolineMoto    : 'Gasoline (Moto)',
+    gasolineKia     : 'Gasoline (KIA)',
+    tollFees        : 'Toll Fees',
+    parking         : 'Parking',
+    roadUsage       : 'Road Usage',
+    gatePass        : 'Gate Pass',
+    fare            : 'Fare',
+    taxesLicenses   : 'Taxes & Licenses',
+    solicitation    : 'Solicitation',
+    professional    : 'Professional Fees',
+    penalty         : 'Penalty & Surcharges',
+    trainings       : 'Trainings & Seminar',
+    interestLoan    : 'Interest on Loan',
+    miscellaneous   : 'Miscellaneous',
+    amortExpense    : 'Amort. – Expense',
+    amortTaxes      : 'Amort. – Taxes',
+    amortMarketing  : 'Amort. – Marketing',
+    amortOfficeEquip: 'Amort. – Office Equip.',
+    amortOfficeMaint: 'Amort. – Office Maint.',
+    amortCarAvanza  : 'Amort. – Car (Avanza)',
+    amortMotorcycle : 'Amort. – Motorcycle',
+    amortTrainings  : 'Amort. – Trainings',
+    amortMisc       : 'Amort. – Misc.',
+  };
+
+  // exclude 'total' key so it doesn't appear as a phantom row
+  const allKeys = Object.keys(det).filter(k => k !== 'total');
+
   if (isAll) {
+    const monthlyRows = allKeys.map(k => {
+      const lbl = GA_LABELS[k] || k;
+      const cells = MONTHS.map(mo => `<td class="num">${peso(det[k] ? det[k][mo]||0 : 0)}</td>`).join('');
+      const ytd = det[k] ? det[k].YTD||0 : 0;
+      return `<tr><td>${lbl}</td>${cells}<td class="num" style="font-weight:600">${peso(ytd)}</td></tr>`;
+    }).join('');
+    const totCells = MONTHS.map(mo => `<td class="num">${peso(ga.total[mo]||0)}</td>`).join('');
+    const totRow = `<tr class="tot"><td>TOTAL G&A</td>${totCells}<td class="num">${peso(ga.total.YTD||0)}</td></tr>`;
     return `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>EXPENSE ITEM</th>${MONTHS.map(m2=>`<th class="num">${m2}</th>`).join('')}<th class="num">YTD</th></tr></thead><tbody>${monthlyRows}${totRow}</tbody></table></div>`;
   }
-  const rows = items.map(i=>`<tr><td>${i.l}</td><td class="num ${i.v>0?'amt-neg':''}">${peso(i.v)}</td></tr>`).join('');
+
+  const items = allKeys
+    .map(k => ({ l: GA_LABELS[k] || k, v: g(det[k]) }))
+    .filter(i => i.v !== 0)
+    .sort((a, b) => b.v - a.v);
+  const rows = items.map(i =>
+    `<tr><td>${i.l}</td><td class="num ${i.v > 0 ? 'amt-neg' : ''}">${peso(i.v)}</td></tr>`
+  ).join('');
   return `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>EXPENSE ITEM</th><th class="num">AMOUNT (${plbl()})</th></tr></thead><tbody>${rows}<tr class="tot"><td>TOTAL G&A</td><td class="num">${peso(g(ga.total))}</td></tr></tbody></table></div>`;
 }
 
