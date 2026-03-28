@@ -213,7 +213,6 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
 .spill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;}
 .spill.profit{background:var(--green-bg);color:var(--green);}
 .spill.loss{background:var(--orange-bg);color:var(--orange);}
-/* ALM-specific */
 .hc-card{background:linear-gradient(135deg,#1e1b4b,#3730a3);border-radius:12px;padding:18px 20px;color:#fff;margin-bottom:16px;}
 .hc-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;}
 .hc-stat{background:rgba(255,255,255,.12);border-radius:8px;padding:12px 14px;}
@@ -226,7 +225,6 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
 .client-card-name{font-size:11px;font-weight:700;color:var(--gray700);margin-bottom:6px;line-height:1.3;}
 .client-card-amt{font-size:15px;font-weight:800;color:var(--gray900);}
 .client-card-meta{font-size:10px;color:var(--gray500);margin-top:2px;}
-/* ALM Target vs Actual */
 .alm-tva-card{background:#fff;border:2px solid var(--gray200);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .18s;user-select:none;}
 .alm-tva-card:hover{border-color:var(--orange2);box-shadow:0 4px 10px rgba(0,0,0,.08);transform:translateY(-1px);}
 .alm-tva-card.active{border-color:var(--orange);box-shadow:0 0 0 3px rgba(194,65,12,.12);}
@@ -300,7 +298,6 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
 <div class="container-xl py-4 px-3 px-md-4">
   <div class="status-alert loading" id="statusEl"><span class="spin"></span>&nbsp; Connecting to Google Sheets…</div>
 
-  <!-- NAM Trading / Builders view -->
   <div id="view-is">
     <div class="period-head" id="periodHead" style="display:none;">
       <div>
@@ -342,7 +339,6 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
     </div>
   </div>
 
-  <!-- ALM Manpower view -->
   <div id="view-alm" style="display:none;">
     <div class="period-head" id="almPeriodHead" style="display:none;">
       <div>
@@ -378,9 +374,6 @@ body{font-family:var(--bs-body-font-family);background:var(--bs-body-bg);}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════════
-//  API CONFIG
-// ═══════════════════════════════════════════════════════════════
 const APIS = {
   trading:  'https://script.google.com/macros/s/AKfycbwmel6PRxAGyVp2t0p0I0QaAtC-U_xRc3C5GbJixgPBpSlR3P1Abd1XNzx-q6MyX2w/exec',
   builders: 'https://script.google.com/macros/s/AKfycbyt_ffHnLaheVTokjX72M2zC0uEP3mmWqQ_9m2_AJbiKd7Ee-LMkyo1FwaehdyFMYFm/exec',
@@ -391,8 +384,7 @@ const APIS_TVA = {
   builders: 'https://script.google.com/macros/s/AKfycbz1hMWJYgj_C6eNxCMwmDWv-eaP7PV2MSEdUHxm2XSrORWPNP03wGLW4fq4rvB1Mf7l/exec',
   alm:      'https://script.google.com/macros/s/AKfycbykeK12AYlns_LFSYzi-H6_s5leM21_nFOdENaCHCWKCv-8JH30aceAeyNJlRuBqdU/exec'
 };
-// ALM Target vs Actual API — set your deployed ALM TVA script URL here if available
-const ALM_TVA_API = 'https://script.google.com/macros/s/AKfycbykeK12AYlns_LFSYzi-H6_s5leM21_nFOdENaCHCWKCv-8JH30aceAeyNJlRuBqdU/exec'; // e.g. 'https://script.google.com/macros/s/YOUR_ALM_TVA_SCRIPT/exec'
+const ALM_TVA_API = 'https://script.google.com/macros/s/AKfycbykeK12AYlns_LFSYzi-H6_s5leM21_nFOdENaCHCWKCv-8JH30aceAeyNJlRuBqdU/exec';
 
 const CO_THEMES = {
   trading:  { primary:'#1d4ed8', primary2:'#3b82f6', bg:'#eff6ff', bd:'#bfdbfe', logoBg:'#1d4ed8', logoText:'T', name:'NAM Wholesale Trading',      short:'NAM Trading' },
@@ -409,7 +401,8 @@ let S = {
   charts:{}, activeDrill:null, almActiveDrill:null,
   drillTab:{}, opexSub:'comp', opexSubTab:'chart',
   tvaSub:'revenue', tvaSubTab:'chart',
-  almDrillTab:{}, almTvaSub:'revenue', almTvaSubTab:'chart'
+  almDrillTab:{}, almTvaSub:'revenue', almTvaSubTab:'chart',
+  almGaSub:'comp', almGaSubTab:'chart'
 };
 
 const C = {
@@ -497,13 +490,11 @@ async function fetchAlm(apiUrl, cb, controller) {
   const promises = [
     fetch(apiUrl + '?action=getSummary&year=' + S.year + '&cb=' + cb, {signal: controller.signal, redirect: 'follow'})
   ];
-  // fetch ALM TVA if configured
   if (ALM_TVA_API) {
     promises.push(fetch(ALM_TVA_API + '?action=getTargetVsActual&year=' + S.year + '&cb=' + cb, {signal: controller.signal, redirect: 'follow'}));
   } else {
     promises.push(Promise.resolve(null));
   }
-
   const [res, tvaRes] = await Promise.all(promises);
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const json = await res.json();
@@ -568,7 +559,7 @@ function setStatus(t, m) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  ALM RENDER  (with full drill-down)
+//  ALM RENDER
 // ═══════════════════════════════════════════════════════════════
 function getAlmVals() {
   if (!S.almData) return null;
@@ -629,7 +620,6 @@ function renderAlmKPIs() {
      change:ni>=0?'▲ '+pct(niMargin)+' NM':'▼ Net Loss', chCls:ni>=0?'ch-up':'ch-down',
      bar:Math.min(Math.abs(niMargin)*300,100)}
   ];
-  // Add TVA card if ALM TVA is available
   if (S.almTva) {
     cards.push({id:'alm-tva', cls:'kpi-indigo', icon:'bi-bar-chart-steps',
       label:'Actual vs Target', value:'TVA',
@@ -670,7 +660,7 @@ function openAlmDrill(id) {
     'alm-revenue': {title:'📦 Service Revenue — Client Breakdown', sub:'Per-client headcount, working days & admin fee', cls:'dp-orange'},
     'alm-hc':      {title:'👥 Headcount & Working Days Detail',    sub:'Monthly HC and WD trend per period',            cls:'dp-indigo'},
     'alm-gp':      {title:'📈 Gross Profit Detail',                sub:'Revenue vs direct costs',                      cls:'dp-green'},
-    'alm-ga':      {title:'🏢 G&A Expenses Breakdown',             sub:'Compensation · Rent · Interest · Depreciation', cls:'dp-orange'},
+    'alm-ga':      {title:'🏢 G&A Expenses Breakdown',             sub:'Compensation · G&A Detail',                    cls:'dp-orange'},
     'alm-ni':      {title:'💰 Net Income — Monthly Detail',        sub:'Bottom-line performance per month',             cls:v&&v.ni>=0?'dp-teal':'dp-red'},
     'alm-tva':     {title:'📊 Actual vs Target',                   sub:'Revenue · HC · Net Income vs Plan',            cls:'dp-indigo'}
   };
@@ -690,10 +680,6 @@ function buildAlmDrillBody(id) {
   const d = S.almData, v = getAlmVals();
   const m = S.month, isAll = m === 'all';
   const g = obj => obj ? (isAll ? (obj.YTD||0) : (obj[m]||0)) : 0;
-
-  // Tab bar builder
-  const tabs = (tabs2, activeKey, onclick) => `<div class="drill-tabs">${tabs2.map(t=>`<button class="dtab${S.almDrillTab[id]===t.k?' active':''}" onclick="${onclick}('${t.k}')">${t.l}</button>`).join('')}</div>`;
-  const setTab = key => { S.almDrillTab[id] = key; openAlmDrill(id); };
   window._almSetDrillTab = (key) => { S.almDrillTab[id] = key; openAlmDrill(id); };
 
   if (id === 'alm-revenue') {
@@ -704,12 +690,10 @@ function buildAlmDrillBody(id) {
     const hcHtml = `<div class="hc-card mb-3"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:12px;">Headcount & Working Days · ${plbl()} ${S.year}</div><div class="hc-card-grid"><div class="hc-stat"><div class="hc-stat-val">${v.hc}</div><div class="hc-stat-lbl">Total Headcount</div><div class="hc-stat-sub">Active deployed</div></div><div class="hc-stat"><div class="hc-stat-val">${v.wd.toFixed(2)}</div><div class="hc-stat-lbl">Working Days</div><div class="hc-stat-sub">Avg per month</div></div><div class="hc-stat"><div class="hc-stat-val">${d.clients.length}</div><div class="hc-stat-lbl">Client Count</div><div class="hc-stat-sub">Active companies</div></div><div class="hc-stat"><div class="hc-stat-val">${peso(v.revenue,true)}</div><div class="hc-stat-lbl">Service Revenue</div><div class="hc-stat-sub">${plbl()}</div></div></div></div>`;
     const sorted = [...d.clients].sort((a,b)=>(g(b.revenue))-(g(a.revenue))).filter(c=>g(c.revenue)>0||g(c.hc)>0);
     const clientCardsHtml = `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:8px;">Per-Client Revenue · ${plbl()}</div><div class="client-grid">${sorted.map(c=>`<div class="client-card"><div class="client-card-name">${c.name}</div><div class="client-card-amt">${peso(g(c.revenue),true)}</div><div class="client-card-meta">HC: ${g(c.hc)} · WD: ${g(c.wd).toFixed(1)}</div></div>`).join('')}</div>`;
-
     if (S.almDrillTab[id] === 'table') {
       return hcHtml + tabBar + buildAlmClientTable(d.clients, m, isAll);
     }
-    const chartHtml = `<div style="height:300px;margin-top:4px;"><canvas id="almDrillCanvas"></canvas></div>`;
-    return hcHtml + clientCardsHtml + tabBar + chartHtml;
+    return hcHtml + clientCardsHtml + tabBar + `<div style="height:300px;margin-top:4px;"><canvas id="almDrillCanvas"></canvas></div>`;
   }
 
   if (id === 'alm-hc') {
@@ -720,8 +704,7 @@ function buildAlmDrillBody(id) {
     const stats = `<div class="drill-stats"><div class="dstat highlight"><div class="dstat-val">${v.hc}</div><div class="dstat-lbl">Total HC · ${plbl()}</div></div><div class="dstat"><div class="dstat-val">${v.wd.toFixed(2)}</div><div class="dstat-lbl">Avg Working Days</div></div><div class="dstat"><div class="dstat-val">${d.clients.length}</div><div class="dstat-lbl">Active Clients</div></div><div class="dstat"><div class="dstat-val">${peso(v.revenue>0&&v.hc>0?(v.revenue/v.hc):0,true)}</div><div class="dstat-lbl">Revenue per HC</div></div></div>`;
     if (S.almDrillTab[id] === 'table') {
       const hcRows = MONTHS.map(mo=>{const hcV=d.headcount[mo]||0,wdV=d.workingDays[mo]||0,revV=(d.revenues.totalRevenue[mo]||0);if(hcV===0&&revV===0)return'';return`<tr><td style="font-weight:600">${mo}</td><td class="num">${hcV}</td><td class="num">${wdV.toFixed(2)}</td><td class="num">${peso(revV)}</td><td class="num">${hcV>0?peso(revV/hcV,true):'—'}</td></tr>`;}).join('');
-      const tbl = `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>MONTH</th><th class="num">HEADCOUNT</th><th class="num">WORKING DAYS</th><th class="num">REVENUE</th><th class="num">REV / HC</th></tr></thead><tbody>${hcRows}</tbody></table></div>`;
-      return stats + tabBar + tbl;
+      return stats + tabBar + `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>MONTH</th><th class="num">HEADCOUNT</th><th class="num">WORKING DAYS</th><th class="num">REVENUE</th><th class="num">REV / HC</th></tr></thead><tbody>${hcRows}</tbody></table></div>`;
     }
     return stats + tabBar + `<div style="height:300px;"><canvas id="almDrillCanvas"></canvas></div>`;
   }
@@ -740,18 +723,34 @@ function buildAlmDrillBody(id) {
   }
 
   if (id === 'alm-ga') {
-    const tabBar = `<div class="drill-tabs">
-      <button class="dtab${S.almDrillTab[id]!=='table'?' active':''}" onclick="_almSetDrillTab('chart')"><i class="bi bi-bar-chart me-1"></i>Chart</button>
-      <button class="dtab${S.almDrillTab[id]==='table'?' active':''}" onclick="_almSetDrillTab('table')"><i class="bi bi-table me-1"></i>Table</button>
-    </div>`;
     const ga = d.gaExpenses;
-    const total = g(ga.total), comp = g(ga.compensation), rent = g(ga.rentUtilities), interest = g(ga.interest), depr = g(ga.depreciation);
-    const stats = `<div class="drill-stats"><div class="dstat highlight"><div class="dstat-val">${peso(total,true)}</div><div class="dstat-lbl">Total G&A · ${plbl()}</div></div><div class="dstat"><div class="dstat-val">${peso(comp,true)}</div><div class="dstat-lbl">Compensation</div></div><div class="dstat"><div class="dstat-val">${peso(interest,true)}</div><div class="dstat-lbl">Interest</div></div><div class="dstat"><div class="dstat-val">${peso(depr,true)}</div><div class="dstat-lbl">Depreciation</div></div></div>`;
-    if (S.almDrillTab[id] === 'table') {
-      return stats + tabBar + buildAlmGaTable(ga, m, isAll);
-    }
-    const vizRow = `<div class="drill-viz-row"><div style="height:320px;"><canvas id="almDrillCanvas"></canvas></div>${buildAlmGaBars(v,g,ga)}</div>`;
-    return stats + tabBar + vizRow;
+    const total = g(ga.total), compTotal = g(ga.compensation), interest = g(ga.interest), depr = g(ga.depreciation);
+    const grandTotal = compTotal + total || 1;
+    const stats = `<div class="drill-stats">
+      <div class="dstat highlight"><div class="dstat-val">${peso(grandTotal,true)}</div><div class="dstat-lbl">Total Expenses · ${plbl()}</div></div>
+      <div class="dstat"><div class="dstat-val">${peso(compTotal,true)}</div><div class="dstat-lbl">Compensation</div></div>
+      <div class="dstat"><div class="dstat-val">${peso(interest,true)}</div><div class="dstat-lbl">Interest</div></div>
+      <div class="dstat"><div class="dstat-val">${peso(depr,true)}</div><div class="dstat-lbl">Depreciation</div></div>
+    </div>`;
+    const subCards = [
+      {id:'comp',     cls:'sc-comp', icon:'bi-people-fill', label:'Compensation', val:compTotal},
+      {id:'gadetail', cls:'sc-ga',   icon:'bi-building',    label:'G&A Detail',   val:total}
+    ];
+    const subCardHtml = `<div class="row g-2 mb-3">${subCards.map(sc => {
+      const barPct = (sc.val / grandTotal * 100).toFixed(1);
+      return `<div class="col-12 col-sm-6">
+        <div class="opex-sub-card ${sc.cls}${S.almGaSub === sc.id ? ' active' : ''}" onclick="setAlmGaSub('${sc.id}')">
+          <div class="sc-label"><i class="bi ${sc.icon} me-1"></i>${sc.label}</div>
+          <div class="sc-value">${peso(sc.val,true)}</div>
+          <div class="sc-pct">${barPct}% of total expenses</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill" style="width:${barPct}%"></div></div>
+        </div></div>`;
+    }).join('')}</div>`;
+    const contentTabs = `<div class="drill-tabs" style="margin-bottom:16px;">
+      <button class="dtab${S.almGaSubTab !== 'table' ? ' active' : ''}" onclick="setAlmGaSubTab('chart')"><i class="bi bi-bar-chart me-1"></i>Chart</button>
+      <button class="dtab${S.almGaSubTab === 'table' ? ' active' : ''}" onclick="setAlmGaSubTab('table')"><i class="bi bi-table me-1"></i>Table</button>
+    </div>`;
+    return stats + subCardHtml + contentTabs + `<div id="almGaSubContent" class="opex-content-area">${buildAlmGaSubContent()}</div>`;
   }
 
   if (id === 'alm-ni') {
@@ -762,31 +761,184 @@ function buildAlmDrillBody(id) {
     const stats = `<div class="drill-stats"><div class="dstat highlight"><div class="dstat-val" style="color:${v.ni>=0?'var(--green)':'var(--red)'}">${peso(v.ni,true)}</div><div class="dstat-lbl">Net Income · ${plbl()}</div></div><div class="dstat"><div class="dstat-val">${peso(v.revenue,true)}</div><div class="dstat-lbl">Revenue</div></div><div class="dstat"><div class="dstat-val">${peso(v.ga,true)}</div><div class="dstat-lbl">G&A Expenses</div></div><div class="dstat"><div class="dstat-val">${pct(v.revenue>0?v.ni/v.revenue:0)}</div><div class="dstat-lbl">Net Margin</div></div></div>`;
     const rows = MONTHS.map(mo=>{const r=d.revenues.totalRevenue[mo]||0,ga2=d.gaExpenses.total[mo]||0,ni2=d.netIncome[mo]||0;if(r===0&&ga2===0)return'';const v2=ni2>=0;return`<tr><td style="font-weight:600">${mo}</td><td class="num">${peso(r)}</td><td class="num amt-neg">${peso(ga2)}</td><td class="num ${v2?'vp':'vn'}">${peso(ni2)}</td><td class="num">${r>0?pct(ni2/r):'—'}</td></tr>`;}).join('');
     const tbl = `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>MONTH</th><th class="num">REVENUE</th><th class="num">G&A EXPENSES</th><th class="num">NET INCOME</th><th class="num">NET MARGIN</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-    if (S.almDrillTab[id] === 'table') {
-      return stats + tabBar + tbl;
-    }
+    if (S.almDrillTab[id] === 'table') { return stats + tabBar + tbl; }
     return stats + tabBar + `<div style="height:320px;"><canvas id="almDrillCanvas"></canvas></div>` + '<div style="margin-top:16px;">' + tbl + '</div>';
   }
 
-  if (id === 'alm-tva') {
-    return buildAlmTvaDrill();
-  }
-
+  if (id === 'alm-tva') { return buildAlmTvaDrill(); }
   return '<p class="p-3 text-muted small">No detail available.</p>';
 }
 
-function buildAlmGaBars(v, g, ga) {
-  const items = [
-    {l:'Compensation',     v:g(ga.compensation),   c:C.blue2},
-    {l:'Interest',         v:g(ga.interest),        c:C.red2},
-    {l:'Rent & Utilities', v:g(ga.rentUtilities),   c:C.orange2},
-    {l:'Depreciation',     v:g(ga.depreciation),    c:'#8b5cf6'},
-    {l:'Other G&A',        v:g(ga.otherGA),          c:C.teal2}
-  ].filter(i=>i.v>0).sort((a,b)=>b.v-a.v);
-  if (!items.length) return '<div></div>';
-  const max = Math.max(...items.map(i=>i.v),1), tot = items.reduce((s,i)=>s+i.v,0)||1;
-  const bars = items.map(it=>`<div class="mb"><div class="mb-top"><span class="mb-name"><span class="mb-dot" style="background:${it.c}"></span>${it.l}</span><span class="mb-val">${peso(it.v,true)} <span style="color:#94a3b8;font-size:10px">${(it.v/tot*100).toFixed(0)}%</span></span></div><div class="mb-track"><div class="mb-fill" style="width:${(it.v/max*100).toFixed(1)}%;background:${it.c}"></div></div></div>`).join('');
-  return `<div class="drill-viz-bars"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:10px;">G&A by Category</div>${bars}</div>`;
+// ─── ALM G&A SUB-DRILL ───────────────────────────────────────────────────────
+function setAlmGaSub(sub) {
+  S.almGaSub = sub;
+  if (S.almActiveDrill === 'alm-ga') openAlmDrill('alm-ga');
+}
+function setAlmGaSubTab(tab) {
+  S.almGaSubTab = tab;
+  if (S.almActiveDrill === 'alm-ga') openAlmDrill('alm-ga');
+}
+function buildAlmGaSubContent() {
+  if (!S.almGaSubTab) S.almGaSubTab = 'chart';
+  if (S.almGaSubTab === 'table') return buildAlmGaSubTable();
+  return `<div class="drill-viz-row"><div class="tva-chart-wrap"><canvas id="almGaSubCanvas"></canvas></div>${buildAlmGaSubBars()}</div>`;
+}
+
+const GA_LABELS_ALM = {
+  postage:'Postage & Telecom',utilities:'Electric & Water',officeRental:'Office Rental',
+  officeSupplies:'Office Supplies',officeMaint:'Office Maintenance',vehicleMaint:'Vehicle Maintenance',
+  carRental:'Car Rental',vehicleLicense:'Vehicle License',advertising:'Advertising',
+  seminars:'Seminars & Meetings',representation:'Representation',marketingStaff:'Marketing Staff',
+  meals:'Meals & Refreshments',gasolineAvanza:'Gasoline (Avanza)',diesel:'Diesel',
+  gasolineMoto:'Gasoline (Moto)',gasolineKia:'Gasoline (KIA)',tollFees:'Toll Fees',
+  parking:'Parking',roadUsage:'Road Usage',gatePass:'Gate Pass',fare:'Fare',
+  taxesLicenses:'Taxes & Licenses',solicitation:'Solicitation',professional:'Professional Fees',
+  penalty:'Penalty & Surcharges',trainings:'Trainings & Seminar',interestLoan:'Interest on Loan',
+  miscellaneous:'Miscellaneous',amortExpense:'Amort. – Expense',amortTaxes:'Amort. – Taxes',
+  amortMarketing:'Amort. – Marketing',amortOfficeEquip:'Amort. – Office Equip.',
+  amortOfficeMaint:'Amort. – Office Maint.',amortCarAvanza:'Amort. – Car (Avanza)',
+  amortMotorcycle:'Amort. – Motorcycle',amortTrainings:'Amort. – Trainings',amortMisc:'Amort. – Misc.'
+};
+const gaColorsALM = ['#4f46e5','#7c3aed','#0e7490','#15803d','#c2410c','#b91c1c','#0369a1','#92400e','#065f46','#1e40af'];
+
+function buildAlmGaSubBars() {
+  const d = S.almData, m = S.month, isAll = m === 'all';
+  const g = obj => obj ? (isAll ? (obj.YTD||0) : (obj[m]||0)) : 0;
+  let items = [], title = '';
+  if (S.almGaSub === 'comp') {
+    title = isAll ? 'Compensation Breakdown — YTD' : `Compensation Breakdown — ${m}`;
+    const comp = d.compensation;
+    items = [
+      {l:'Salaries & Wages',  v:g(comp.salariesWages), c:C.comp[0]},
+      {l:'Allowances',        v:g(comp.allowances),    c:C.comp[1]},
+      {l:'OT / Night Diff',   v:g(comp.otNightDiff),   c:C.comp[2]},
+      {l:'13th Month Bonus',  v:g(comp.bonus13th),     c:C.comp[3]},
+      {l:'Statutory Benefits',v:g(comp.statutoryBen),  c:C.comp[4]},
+      {l:'Service Inc. Leave',v:g(comp.sil),           c:C.comp[5]},
+    ].filter(i => i.v > 0).sort((a,b) => b.v - a.v);
+  } else {
+    title = isAll ? 'G&A Detail — YTD (Top 10)' : `G&A Detail — ${m}`;
+    const det = d.gaExpenses.detail || {};
+    items = Object.keys(det).filter(k => k !== 'total').map((k,i) => ({
+      l: GA_LABELS_ALM[k] || k, v: g(det[k]), c: gaColorsALM[i % gaColorsALM.length]
+    })).filter(i => i.v > 0).sort((a,b) => b.v - a.v).slice(0, 10);
+  }
+  if (!items.length) return `<div class="drill-viz-bars"><p style="font-size:11px;color:#94a3b8;padding-top:20px;">No data for this period.</p></div>`;
+  const max = Math.max(...items.map(i => i.v), 1);
+  const tot = items.reduce((s,i) => s + i.v, 0) || 1;
+  const bars = items.map(it => `<div class="mb"><div class="mb-top"><span class="mb-name"><span class="mb-dot" style="background:${it.c}"></span>${it.l}</span><span class="mb-val">${peso(it.v,true)} <span style="color:#94a3b8;font-size:10px">${(it.v/tot*100).toFixed(0)}%</span></span></div><div class="mb-track"><div class="mb-fill" style="width:${(it.v/max*100).toFixed(1)}%;background:${it.c}"></div></div></div>`).join('');
+  return `<div class="drill-viz-bars"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:10px;">${title}</div>${bars}</div>`;
+}
+
+function buildAlmGaSubTable() {
+  const d = S.almData, m = S.month, isAll = m === 'all';
+  const g = obj => obj ? (isAll ? (obj.YTD||0) : (obj[m]||0)) : 0;
+  const wrap = html => `<div class="tbl-scroll">${html}</div>`;
+  if (S.almGaSub === 'comp') {
+    const comp = d.compensation;
+    const items = [
+      {l:'Salaries & Wages',   d:comp.salariesWages},
+      {l:'Allowances',         d:comp.allowances},
+      {l:'OT / Night Diff',    d:comp.otNightDiff},
+      {l:'13th Month Bonus',   d:comp.bonus13th},
+      {l:'Statutory Benefits', d:comp.statutoryBen},
+      {l:'Service Inc. Leave', d:comp.sil},
+    ];
+    if (isAll) {
+      const rows = items.map(it => `<tr><td>${it.l}</td>${MONTHS.map(mo=>`<td class="num">${peso(it.d?it.d[mo]||0:0)}</td>`).join('')}<td class="num" style="font-weight:600">${peso(it.d?it.d.YTD||0:0)}</td></tr>`).join('');
+      const totRow = `<tr class="tot"><td>Total Compensation</td>${MONTHS.map(mo=>`<td class="num">${peso(comp.total?comp.total[mo]||0:0)}</td>`).join('')}<td class="num">${peso(comp.total?comp.total.YTD||0:0)}</td></tr>`;
+      return wrap(`<table class="data-table"><thead><tr><th>COMP ITEM</th>${MONTHS.map(m2=>`<th class="num">${m2}</th>`).join('')}<th class="num">YTD</th></tr></thead><tbody>${rows}${totRow}</tbody></table>`);
+    }
+    const rows = items.map(it => `<tr><td>${it.l}</td><td class="num amt-neg">${peso(g(it.d))}</td></tr>`).join('');
+    return wrap(`<table class="data-table"><thead><tr><th>COMP ITEM</th><th class="num">AMOUNT (${plbl()})</th></tr></thead><tbody>${rows}<tr class="tot"><td>Total Compensation</td><td class="num">${peso(g(comp.total))}</td></tr></tbody></table>`);
+  }
+  return buildAlmGaTable(d.gaExpenses, m, isAll);
+}
+
+function buildAlmGaTable(ga, m, isAll) {
+  const g = obj => obj ? (isAll ? (obj.YTD||0) : (obj[m]||0)) : 0;
+  const det = ga.detail || {};
+  const allKeys = Object.keys(det).filter(k => k !== 'total');
+  if (isAll) {
+    const monthlyRows = allKeys.map(k => {
+      const lbl = GA_LABELS_ALM[k] || k;
+      const cells = MONTHS.map(mo => `<td class="num">${peso(det[k] ? det[k][mo]||0 : 0)}</td>`).join('');
+      const ytd = det[k] ? det[k].YTD||0 : 0;
+      return `<tr><td>${lbl}</td>${cells}<td class="num" style="font-weight:600">${peso(ytd)}</td></tr>`;
+    }).join('');
+    const totCells = MONTHS.map(mo => `<td class="num">${peso(ga.total[mo]||0)}</td>`).join('');
+    const totRow = `<tr class="tot"><td>TOTAL G&A</td>${totCells}<td class="num">${peso(ga.total.YTD||0)}</td></tr>`;
+    return `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>EXPENSE ITEM</th>${MONTHS.map(m2=>`<th class="num">${m2}</th>`).join('')}<th class="num">YTD</th></tr></thead><tbody>${monthlyRows}${totRow}</tbody></table></div>`;
+  }
+  const items = allKeys.map(k => ({ l: GA_LABELS_ALM[k] || k, v: g(det[k]) })).filter(i => i.v !== 0).sort((a, b) => b.v - a.v);
+  const rows = items.map(i => `<tr><td>${i.l}</td><td class="num ${i.v > 0 ? 'amt-neg' : ''}">${peso(i.v)}</td></tr>`).join('');
+  return `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>EXPENSE ITEM</th><th class="num">AMOUNT (${plbl()})</th></tr></thead><tbody>${rows}<tr class="tot"><td>TOTAL G&A</td><td class="num">${peso(g(ga.total))}</td></tr></tbody></table></div>`;
+}
+
+function initAlmGaSubChart(sub) {
+  const ctx = el('almGaSubCanvas'); if (!ctx) return;
+  if (S.charts.almGaSub) { S.charts.almGaSub.destroy(); delete S.charts.almGaSub; }
+  const wrap = ctx.parentElement;
+  if (wrap) { ctx.style.width = '100%'; ctx.style.height = (wrap.offsetHeight > 0 ? wrap.offsetHeight : 380) + 'px'; }
+  const d = S.almData, m = S.month, isAll = m === 'all';
+  const g = obj => obj ? (isAll ? (obj.YTD||0) : (obj[m]||0)) : 0;
+  const opts = mkBarOpts();
+  opts.responsive = true; opts.maintainAspectRatio = false;
+  opts.interaction = {mode:'index', intersect:false};
+
+  if (sub === 'comp') {
+    const comp = d.compensation;
+    const compItems = [
+      {l:'Salaries & Wages',  d:comp.salariesWages, c:C.comp[0]},
+      {l:'Allowances',        d:comp.allowances,    c:C.comp[1]},
+      {l:'OT / Night Diff',   d:comp.otNightDiff,   c:C.comp[2]},
+      {l:'13th Month',        d:comp.bonus13th,     c:C.comp[3]},
+      {l:'Statutory Ben.',    d:comp.statutoryBen,  c:C.comp[4]},
+      {l:'Service Inc.',      d:comp.sil,           c:C.comp[5]},
+    ];
+    if (isAll) {
+      const actMo = MONTHS.filter(mo => compItems.some(ci => ci.d && ci.d[mo] > 0));
+      const labels = actMo.length > 0 ? actMo : MONTHS;
+      S.charts.almGaSub = new Chart(ctx, {type:'bar', data:{labels, datasets:
+        compItems.filter(ci => labels.some(mo => ci.d && ci.d[mo] > 0)).map(ci => ({
+          label: ci.l, data: labels.map(mo => ci.d ? ci.d[mo]||0 : 0),
+          backgroundColor: ci.c+'55', borderColor: ci.c, borderWidth:2, borderRadius:4
+        }))
+      }, options:{...opts, scales:{...opts.scales, x:{...opts.scales.x,stacked:true}, y:{...opts.scales.y,stacked:true}}}});
+    } else {
+      const items = compItems.filter(ci => g(ci.d) > 0);
+      S.charts.almGaSub = new Chart(ctx, {type:'doughnut', data:{
+        labels: items.map(i=>i.l),
+        datasets:[{data:items.map(i=>g(i.d)), backgroundColor:items.map(i=>i.c), borderColor:'#fff', borderWidth:2}]
+      }, options:{responsive:true, maintainAspectRatio:false, cutout:'60%',
+        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},
+          tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,
+            callbacks:{label:c=>` ${c.label}: ${peso(c.raw)}`}}}}});
+    }
+  } else {
+    const det = d.gaExpenses.detail || {};
+    if (isAll) {
+      const actMo = MONTHS.filter(mo => Object.keys(det).some(k => k!=='total' && det[k] && det[k][mo]>0));
+      const labels = actMo.length > 0 ? actMo : MONTHS;
+      const topKeys = Object.keys(det).filter(k=>k!=='total')
+        .map(k=>({k,v:det[k]?det[k].YTD||0:0})).sort((a,b)=>b.v-a.v).slice(0,6).map(i=>i.k);
+      S.charts.almGaSub = new Chart(ctx, {type:'bar', data:{labels, datasets:
+        topKeys.map((k,i) => ({
+          label: GA_LABELS_ALM[k]||k, data: labels.map(mo=>det[k]?det[k][mo]||0:0),
+          backgroundColor: gaColorsALM[i%gaColorsALM.length]+'55', borderColor: gaColorsALM[i%gaColorsALM.length], borderWidth:2, borderRadius:4
+        }))
+      }, options:{...opts, scales:{...opts.scales, x:{...opts.scales.x,stacked:true}, y:{...opts.scales.y,stacked:true}}}});
+    } else {
+      const items = Object.keys(det).filter(k=>k!=='total')
+        .map((k,i)=>({l:GA_LABELS_ALM[k]||k, v:g(det[k]), c:gaColorsALM[i%gaColorsALM.length]}))
+        .filter(i=>i.v>0).sort((a,b)=>b.v-a.v).slice(0,10);
+      S.charts.almGaSub = new Chart(ctx, {type:'bar', data:{
+        labels: items.map(i=>i.l),
+        datasets:[{label:`G&A — ${m}`, data:items.map(i=>i.v),
+          backgroundColor:items.map(i=>i.c+'55'), borderColor:items.map(i=>i.c), borderWidth:2, borderRadius:5}]
+      }, options:{...opts, indexAxis:'y', plugins:{...opts.plugins, legend:{display:false}}}});
+    }
+  }
 }
 
 function buildAlmClientTable(clients, m, isAll) {
@@ -798,77 +950,7 @@ function buildAlmClientTable(clients, m, isAll) {
   return `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>CLIENT</th><th class="num">HC</th><th class="num">WORKING DAYS</th><th class="num">SERVICE INCOME</th></tr></thead><tbody>${rows}${totRow}</tbody></table></div>`;
 }
 
-function buildAlmGaTable(ga, m, isAll) {
-  const g = obj => obj ? (isAll ? (obj.YTD||0) : (obj[m]||0)) : 0;
-  const det = ga.detail || {};
-
-  const GA_LABELS = {
-    postage         : 'Postage & Telecom',
-    utilities       : 'Electric & Water',
-    officeRental    : 'Office Rental',
-    officeSupplies  : 'Office Supplies',
-    officeMaint     : 'Office Maintenance',
-    vehicleMaint    : 'Vehicle Maintenance',
-    carRental       : 'Car Rental',
-    vehicleLicense  : 'Vehicle License',
-    advertising     : 'Advertising',
-    seminars        : 'Seminars & Meetings',
-    representation  : 'Representation',
-    marketingStaff  : 'Marketing Staff',
-    meals           : 'Meals & Refreshments',
-    gasolineAvanza  : 'Gasoline (Avanza)',
-    diesel          : 'Diesel',
-    gasolineMoto    : 'Gasoline (Moto)',
-    gasolineKia     : 'Gasoline (KIA)',
-    tollFees        : 'Toll Fees',
-    parking         : 'Parking',
-    roadUsage       : 'Road Usage',
-    gatePass        : 'Gate Pass',
-    fare            : 'Fare',
-    taxesLicenses   : 'Taxes & Licenses',
-    solicitation    : 'Solicitation',
-    professional    : 'Professional Fees',
-    penalty         : 'Penalty & Surcharges',
-    trainings       : 'Trainings & Seminar',
-    interestLoan    : 'Interest on Loan',
-    miscellaneous   : 'Miscellaneous',
-    amortExpense    : 'Amort. – Expense',
-    amortTaxes      : 'Amort. – Taxes',
-    amortMarketing  : 'Amort. – Marketing',
-    amortOfficeEquip: 'Amort. – Office Equip.',
-    amortOfficeMaint: 'Amort. – Office Maint.',
-    amortCarAvanza  : 'Amort. – Car (Avanza)',
-    amortMotorcycle : 'Amort. – Motorcycle',
-    amortTrainings  : 'Amort. – Trainings',
-    amortMisc       : 'Amort. – Misc.',
-  };
-
-  // exclude 'total' key so it doesn't appear as a phantom row
-  const allKeys = Object.keys(det).filter(k => k !== 'total');
-
-  if (isAll) {
-    const monthlyRows = allKeys.map(k => {
-      const lbl = GA_LABELS[k] || k;
-      const cells = MONTHS.map(mo => `<td class="num">${peso(det[k] ? det[k][mo]||0 : 0)}</td>`).join('');
-      const ytd = det[k] ? det[k].YTD||0 : 0;
-      return `<tr><td>${lbl}</td>${cells}<td class="num" style="font-weight:600">${peso(ytd)}</td></tr>`;
-    }).join('');
-    const totCells = MONTHS.map(mo => `<td class="num">${peso(ga.total[mo]||0)}</td>`).join('');
-    const totRow = `<tr class="tot"><td>TOTAL G&A</td>${totCells}<td class="num">${peso(ga.total.YTD||0)}</td></tr>`;
-    return `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>EXPENSE ITEM</th>${MONTHS.map(m2=>`<th class="num">${m2}</th>`).join('')}<th class="num">YTD</th></tr></thead><tbody>${monthlyRows}${totRow}</tbody></table></div>`;
-  }
-
-  const items = allKeys
-    .map(k => ({ l: GA_LABELS[k] || k, v: g(det[k]) }))
-    .filter(i => i.v !== 0)
-    .sort((a, b) => b.v - a.v);
-  const rows = items.map(i =>
-    `<tr><td>${i.l}</td><td class="num ${i.v > 0 ? 'amt-neg' : ''}">${peso(i.v)}</td></tr>`
-  ).join('');
-  return `<div class="tbl-scroll"><table class="data-table"><thead><tr><th>EXPENSE ITEM</th><th class="num">AMOUNT (${plbl()})</th></tr></thead><tbody>${rows}<tr class="tot"><td>TOTAL G&A</td><td class="num">${peso(g(ga.total))}</td></tr></tbody></table></div>`;
-}
-
-// ALM Target vs Actual drill — stub if no TVA API, full if available
+// ALM TVA Drill
 function buildAlmTvaDrill() {
   if (!S.almTva) {
     return `<div class="p-4"><p style="color:var(--orange);font-weight:600;font-size:13px;">⚠ ALM Target vs Actual not configured</p><p style="color:var(--gray500);font-size:12px;margin-top:8px;">To enable this, set <code>ALM_TVA_API</code> at the top of the script to your deployed ALM TVA Apps Script URL.</p></div>`;
@@ -880,12 +962,15 @@ function buildAlmTvaDrill() {
   const niA = isAll?(kpi.netIncome?.ytdActual||0):(tva.netIncome?.monthly?.[m]?.actual||0);
   const niT = isAll?(kpi.netIncome?.ytdTarget||0):(tva.netIncome?.monthly?.[m]?.target||0);
   const revPct = revT>0?revA/revT*100:0;
-  const achCls = revPct>=100?'good':revPct>=60?'warn':'bad';
   const stats = `<div class="drill-stats"><div class="dstat highlight"><div class="dstat-val">${revPct.toFixed(1)}%</div><div class="dstat-lbl">Revenue Achievement · ${plbl()}</div></div><div class="dstat"><div class="dstat-val">${peso(revA,true)}</div><div class="dstat-lbl">Revenue Actual</div></div><div class="dstat"><div class="dstat-val">${peso(revT,true)}</div><div class="dstat-lbl">Revenue Target</div></div><div class="dstat"><div class="dstat-val" style="color:${niA>=0?'var(--green)':'var(--red)'}">${peso(niA,true)}</div><div class="dstat-lbl">Net Income Actual</div></div></div>`;
   return stats + `<div style="height:320px;margin-top:16px;"><canvas id="almDrillCanvas"></canvas></div>`;
 }
 
+// ─── ALM DRILL CHART (with alm-ga routing fix) ───────────────────────────────
 function initAlmDrillChart(id) {
+  // ← FIXED: route alm-ga to sub-chart instead of almDrillCanvas
+  if (id === 'alm-ga') { initAlmGaSubChart(S.almGaSub); return; }
+
   const ctx = el('almDrillCanvas'); if (!ctx) return;
   if (S.charts.almDrill) { S.charts.almDrill.destroy(); delete S.charts.almDrill; }
   const d = S.almData, opts = mkBarOpts();
@@ -901,7 +986,6 @@ function initAlmDrillChart(id) {
   const filt    = arr => actIdx.map(i=>arr[i]);
 
   if (id === 'alm-revenue') {
-    // Bar chart: per-client revenue
     const m2 = S.month, isAll = m2 === 'all';
     const g = obj => obj?(isAll?(obj.YTD||0):(obj[m2]||0)):0;
     const sorted = [...d.clients].sort((a,b)=>g(b.revenue)-g(a.revenue)).filter(c=>g(c.revenue)>0);
@@ -909,7 +993,6 @@ function initAlmDrillChart(id) {
     S.charts.almDrill = new Chart(ctx,{type:'bar',data:{labels:sorted.map(c=>c.name),datasets:[{label:'Service Revenue',data:sorted.map(c=>g(c.revenue)),backgroundColor:sorted.map((_,i)=>colors[i%colors.length]+'55'),borderColor:sorted.map((_,i)=>colors[i%colors.length]),borderWidth:2,borderRadius:5}]},options:{...opts,indexAxis:'y',plugins:{...opts.plugins,legend:{display:false}}}});
     return;
   }
-
   if (id === 'alm-hc') {
     S.charts.almDrill = new Chart(ctx,{type:'bar',data:{labels:actMths,datasets:[
       {label:'Headcount',data:filt(hcArr),backgroundColor:'rgba(79,70,229,.3)',borderColor:C.indigo,borderWidth:2,borderRadius:5,yAxisID:'yHC'},
@@ -921,18 +1004,6 @@ function initAlmDrillChart(id) {
       {label:'Revenue',data:filt(revArr),backgroundColor:'rgba(249,115,22,.2)',borderColor:C.orange2,borderWidth:2,borderRadius:5},
       {label:'Gross Profit',data:filt(gpArr),backgroundColor:'rgba(34,197,94,.25)',borderColor:C.green2,borderWidth:2,borderRadius:5}
     ]},options:{...opts,interaction:{mode:'index',intersect:false}}}); return;
-  }
-  if (id === 'alm-ga') {
-    const compArr = MONTHS.map(m=>d.gaExpenses.compensation[m]||0);
-    const intArr  = MONTHS.map(m=>d.gaExpenses.interest[m]||0);
-    const rentArr = MONTHS.map(m=>d.gaExpenses.rentUtilities[m]||0);
-    const othArr  = MONTHS.map(m=>d.gaExpenses.otherGA[m]||0);
-    S.charts.almDrill = new Chart(ctx,{type:'bar',data:{labels:actMths,datasets:[
-      {label:'Compensation',data:filt(compArr),backgroundColor:'rgba(29,78,216,.3)',borderColor:C.blue2,borderWidth:2,borderRadius:4},
-      {label:'Interest',data:filt(intArr),backgroundColor:'rgba(239,68,68,.3)',borderColor:C.red2,borderWidth:2,borderRadius:4},
-      {label:'Rent & Utilities',data:filt(rentArr),backgroundColor:'rgba(249,115,22,.3)',borderColor:C.orange2,borderWidth:2,borderRadius:4},
-      {label:'Other G&A',data:filt(othArr),backgroundColor:'rgba(34,211,238,.3)',borderColor:C.teal2,borderWidth:2,borderRadius:4}
-    ]},options:{...opts,interaction:{mode:'index',intersect:false},scales:{...opts.scales,x:{...opts.scales.x,stacked:true},y:{...opts.scales.y,stacked:true}}}}); return;
   }
   if (id === 'alm-ni') {
     S.charts.almDrill = new Chart(ctx,{type:'bar',data:{labels:actMths,datasets:[
@@ -956,10 +1027,10 @@ function initAlmDrillChart(id) {
   }
 }
 
+// ─── ALM BOTTOM CHARTS ────────────────────────────────────────────────────────
 function renderAlmTrend() {
   const d = S.almData; if (!d) return;
-  const dcl = id => { if(S.charts[id]){S.charts[id].destroy();delete S.charts[id];} };
-  dcl('almChartTrend');
+  if(S.charts.almChartTrend){S.charts.almChartTrend.destroy();delete S.charts.almChartTrend;}
   const revArr = MONTHS.map(m=>d.revenues.totalRevenue[m]||0);
   const gaArr  = MONTHS.map(m=>d.gaExpenses.total[m]||0);
   const niArr  = MONTHS.map(m=>d.netIncome[m]||0);
@@ -972,8 +1043,7 @@ function renderAlmTrend() {
 
 function renderAlmHcChart() {
   const d = S.almData; if (!d) return;
-  const dcl = id => { if(S.charts[id]){S.charts[id].destroy();delete S.charts[id];} };
-  dcl('almChartHC');
+  if(S.charts.almChartHC){S.charts.almChartHC.destroy();delete S.charts.almChartHC;}
   const hcArr  = MONTHS.map(m=>d.headcount[m]||0);
   const wdArr  = MONTHS.map(m=>d.workingDays[m]||0);
   const actMths = MONTHS.filter((_,i)=>hcArr[i]>0);
@@ -1150,11 +1220,8 @@ const dcc=id=>{if(S.charts[id]){S.charts[id].destroy();delete S.charts[id];}};
 function renderTrend(){const d=S.data.monthlyTrend;dcc('chartTrend');S.charts.chartTrend=new Chart(el('chartTrend'),{type:'line',data:{labels:MONTHS,datasets:[{label:'Net Sales',data:d.sales,borderColor:C.blue2,backgroundColor:C.blueA,fill:true,tension:.4,pointRadius:3,borderWidth:2},{label:'Gross Profit',data:d.grossProfit,borderColor:C.green2,backgroundColor:C.greenA,fill:true,tension:.4,pointRadius:3,borderWidth:2},{label:'Net Income',data:d.netIncome,borderColor:C.teal2,backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:2,borderDash:[5,3]}]},options:mkLineOpts()});}
 function renderDonut(){const v=getVals(),gm=v.sales>0?v.gp/v.sales:0;el('donutPct').textContent=(gm*100).toFixed(1)+'%';const fc=gm>=.3?C.green2:gm>=.1?C.teal2:C.orange2;el('donutPct').style.color=fc;dcc('chartDonut');S.charts.chartDonut=new Chart(el('chartDonut'),{type:'doughnut',data:{labels:['Gross Margin','COGS %'],datasets:[{data:[Math.max(0,gm*100),Math.max(0,(1-gm)*100)],backgroundColor:[fc,'#e2e8f0'],borderColor:['#fff','#fff'],borderWidth:3}]},options:{responsive:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});el('donutLegend').innerHTML=[{dot:fc,n:'Gross Margin',v:pct(gm)},{dot:'#e2e8f0',n:'COGS Share',v:pct(1-gm)},{dot:C.teal2,n:'Net Income',v:peso(v.ni,true)}].map(r=>`<div class="dl-row"><span class="dl-dot" style="background:${r.dot}"></span><span class="dl-name">${r.n}</span><span class="dl-val">${r.v}</span></div>`).join('');}
 
-/* Clock */
 setInterval(()=>{el('clockEl').textContent=new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});},1000);
-/* Year select */
 (()=>{const sel=el('selYear');for(let y=2023;y<=2030;y++){const o=document.createElement('option');o.value=y;o.textContent=y;sel.appendChild(o);}sel.value='2026';})();
-/* Init */
 applyTheme('trading');
 fetchData();
 let cd=30,timer=null;
