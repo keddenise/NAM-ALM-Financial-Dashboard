@@ -879,12 +879,27 @@ function initAlmGaSubChart(sub) {
   const ctx = el('almGaSubCanvas'); if (!ctx) return;
   if (S.charts.almGaSub) { S.charts.almGaSub.destroy(); delete S.charts.almGaSub; }
   const wrap = ctx.parentElement;
-  if (wrap) { ctx.style.width = '100%'; ctx.style.height = (wrap.offsetHeight > 0 ? wrap.offsetHeight : 380) + 'px'; }
+  if (wrap) { ctx.style.width = '100%'; ctx.style.height = (wrap.offsetHeight > 0 ? wrap.offsetHeight : 360) + 'px'; }
   const d = S.almData, m = S.month, isAll = m === 'all';
   const g = obj => obj ? (isAll ? (obj.YTD||0) : (obj[m]||0)) : 0;
-  const opts = mkBarOpts();
-  opts.responsive = true; opts.maintainAspectRatio = false;
-  opts.interaction = {mode:'index', intersect:false};
+
+  // ── shared donut options ──────────────────────────────────────────────────
+  const donutOpts = {
+    responsive: true, maintainAspectRatio: false, cutout: '62%',
+    plugins: {
+      legend: { position:'bottom', labels:{ color:C.text, font:{size:10}, boxWidth:10, padding:10 } },
+      tooltip: {
+        backgroundColor:'#fff', borderColor:C.border, borderWidth:1.5,
+        titleColor:C.text, bodyColor:C.muted, padding:10, cornerRadius:8,
+        callbacks: {
+          label: c => {
+            const tot = c.dataset.data.reduce((s,v)=>s+v,0)||1;
+            return ` ${c.label}: ${peso(c.raw)} (${(c.raw/tot*100).toFixed(1)}%)`;
+          }
+        }
+      }
+    }
+  };
 
   if (sub === 'comp') {
     const comp = d.compensation;
@@ -895,49 +910,28 @@ function initAlmGaSubChart(sub) {
       {l:'13th Month',        d:comp.bonus13th,     c:C.comp[3]},
       {l:'Statutory Ben.',    d:comp.statutoryBen,  c:C.comp[4]},
       {l:'Service Inc.',      d:comp.sil,           c:C.comp[5]},
-    ];
-    if (isAll) {
-      const actMo = MONTHS.filter(mo => compItems.some(ci => ci.d && ci.d[mo] > 0));
-      const labels = actMo.length > 0 ? actMo : MONTHS;
-      S.charts.almGaSub = new Chart(ctx, {type:'bar', data:{labels, datasets:
-        compItems.filter(ci => labels.some(mo => ci.d && ci.d[mo] > 0)).map(ci => ({
-          label: ci.l, data: labels.map(mo => ci.d ? ci.d[mo]||0 : 0),
-          backgroundColor: ci.c+'55', borderColor: ci.c, borderWidth:2, borderRadius:4
-        }))
-      }, options:{...opts, scales:{...opts.scales, x:{...opts.scales.x,stacked:true}, y:{...opts.scales.y,stacked:true}}}});
-    } else {
-      const items = compItems.filter(ci => g(ci.d) > 0);
-      S.charts.almGaSub = new Chart(ctx, {type:'doughnut', data:{
-        labels: items.map(i=>i.l),
-        datasets:[{data:items.map(i=>g(i.d)), backgroundColor:items.map(i=>i.c), borderColor:'#fff', borderWidth:2}]
-      }, options:{responsive:true, maintainAspectRatio:false, cutout:'60%',
-        plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},
-          tooltip:{backgroundColor:'#fff',borderColor:C.border,borderWidth:1.5,titleColor:C.text,bodyColor:C.muted,padding:10,cornerRadius:8,
-            callbacks:{label:c=>` ${c.label}: ${peso(c.raw)}`}}}}});
-    }
+    ].filter(ci => g(ci.d) > 0);
+    S.charts.almGaSub = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: compItems.map(i => i.l),
+        datasets: [{ data: compItems.map(i => g(i.d)), backgroundColor: compItems.map(i => i.c), borderColor:'#fff', borderWidth:3, hoverOffset:8 }]
+      },
+      options: donutOpts
+    });
   } else {
     const det = d.gaExpenses.detail || {};
-    if (isAll) {
-      const actMo = MONTHS.filter(mo => Object.keys(det).some(k => k!=='total' && det[k] && det[k][mo]>0));
-      const labels = actMo.length > 0 ? actMo : MONTHS;
-      const topKeys = Object.keys(det).filter(k=>k!=='total')
-        .map(k=>({k,v:det[k]?det[k].YTD||0:0})).sort((a,b)=>b.v-a.v).slice(0,6).map(i=>i.k);
-      S.charts.almGaSub = new Chart(ctx, {type:'bar', data:{labels, datasets:
-        topKeys.map((k,i) => ({
-          label: GA_LABELS_ALM[k]||k, data: labels.map(mo=>det[k]?det[k][mo]||0:0),
-          backgroundColor: gaColorsALM[i%gaColorsALM.length]+'55', borderColor: gaColorsALM[i%gaColorsALM.length], borderWidth:2, borderRadius:4
-        }))
-      }, options:{...opts, scales:{...opts.scales, x:{...opts.scales.x,stacked:true}, y:{...opts.scales.y,stacked:true}}}});
-    } else {
-      const items = Object.keys(det).filter(k=>k!=='total')
-        .map((k,i)=>({l:GA_LABELS_ALM[k]||k, v:g(det[k]), c:gaColorsALM[i%gaColorsALM.length]}))
-        .filter(i=>i.v>0).sort((a,b)=>b.v-a.v).slice(0,10);
-      S.charts.almGaSub = new Chart(ctx, {type:'bar', data:{
-        labels: items.map(i=>i.l),
-        datasets:[{label:`G&A — ${m}`, data:items.map(i=>i.v),
-          backgroundColor:items.map(i=>i.c+'55'), borderColor:items.map(i=>i.c), borderWidth:2, borderRadius:5}]
-      }, options:{...opts, indexAxis:'y', plugins:{...opts.plugins, legend:{display:false}}}});
-    }
+    const items = Object.keys(det).filter(k => k !== 'total')
+      .map((k, i) => ({ l: GA_LABELS_ALM[k] || k, v: g(det[k]), c: gaColorsALM[i % gaColorsALM.length] }))
+      .filter(i => i.v > 0).sort((a, b) => b.v - a.v).slice(0, 10);
+    S.charts.almGaSub = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: items.map(i => i.l),
+        datasets: [{ data: items.map(i => i.v), backgroundColor: items.map(i => i.c), borderColor:'#fff', borderWidth:3, hoverOffset:8 }]
+      },
+      options: donutOpts
+    });
   }
 }
 
